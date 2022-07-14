@@ -1,3 +1,5 @@
+[toc]
+
 # spark
 
 ## spark是什么
@@ -232,6 +234,203 @@ source ~/.bash_profile
 
 ```py
 pip3 install pyspark
+```
+
+# 快速开始
+
+## Spark独立程序
+
+基于`scala`创建一个简单的独立程序。
+
+```scala
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+object SimpleApp {
+	def main(args: Array[String]): Unit = {
+		val logFile = "/Users/chenxinyu/app/spark-3.3.0-bin-hadoop3/README.md"
+		val conf = new SparkConf().setAppName("simple Application").setMaster("local")
+		val sc = new SparkContext(conf)
+		val logData = sc.textFile(logFile, 2).cache()
+		val numAs = logData.filter(line => line.contains("a")).count()
+		val numBs = logData.filter(line => line.contains("b")).count()
+		println("a: %s , b : %s".format(numAs,numBs))
+	}
+}
+```
+
+程序是计算目录下文件中的所有a和b的数量
+
+![image-20220713114402230](spark.assets/image-20220713114402230.png)
+
+## Spark Shell
+
+### **在Spark的安装目录下运行**
+
+```shell
+bin/spark-shell 
+22/07/13 11:30:09 WARN Utils: Your hostname, chenxinyudeMacBook-Pro.local resolves to a loopback address: 127.0.0.1; using 10.238.56.42 instead (on interface en0)
+22/07/13 11:30:09 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+22/07/13 11:30:19 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Spark context Web UI available at http://10.238.56.42:4040
+Spark context available as 'sc' (master = local[*], app id = local-1657683020477).
+Spark session available as 'spark'.
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 3.3.0
+      /_/
+         
+Using Scala version 2.12.15 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_311)
+Type in expressions to have them evaluated.
+Type :help for more information.
+```
+
+### 基础
+
+Spark最主要的抽象是叫做`Resilient Distributed Dataset(RDD)`。RDDs可以使用Hadoop InputFormats(例如HDFS文件创建)，也可以从其他的RDDs转换。让我们在Spark源代码目录从README文本文件中汇总创建一个新的RDD
+
+```scala
+scala> var txt = sc.textFile("README.md")
+txt: org.apache.spark.rdd.RDD[String] = README.md MapPartitionsRDD[1] at textFile at <console>:23
+```
+
+统计数据条数 | 获取第一行数据
+
+```scala
+scala> txt.count()
+res0: Long = 124 
+
+scala> txt.first()
+res1: String = # Apache Spark
+```
+
+使用`transformation`，返回一个新的RDD并返回的他的引用，统计带有Spark的行数
+
+```scala
+scala> val linesWithSpark = txt.filter(line => line.contains("Spark"))
+linesWithSpark: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[2] at filter at <console>:23
+
+scala> linesWithSpark.count()
+res2: Long = 20
+```
+
+其他复杂的运算
+
+```scala
+scala> txt.map(line => line.split(" ").size).reduce((a,b) => if (a > b) a else b)
+res4: Int = 16
+
+scala> txt.map(line => line.split(" ").size).reduce((a,b) => Math.max(a,b))
+res5: Int = 16
+
+```
+
+实现MapReduce模式的wordcount
+
+```scala
+scala> val wordCount = txt.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey((a, b) => a + b)
+wordCount: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[7] at reduceByKey at <console>:24
+
+scala> wordCount.collect()
+res6: Array[(String, Int)] = Array((package,1), (this,1), (integration,1), (Python,2), (cluster.,1), (its,1), ([run,1), (There,1), (general,2), (have,1), (pre-built,1), (Because,1), (YARN,,1), (locally,2), (changed,1), (locally.,1), (several,1), (only,1), (Configuration,1), (This,2), (basic,1), (first,1), (learning,,1), (documentation,3), (graph,1), (Hive,2), (info,1), (["Specifying,1), ("yarn",1), ([params]`.,1), ([project,1), (prefer,1), (SparkPi,2), (engine,2), (version,1), (file,1), (documentation,,1), (Action,1), (MASTER,1), (example,3), (are,1), (systems.,1), (params,1), (scala>,1), (DataFrames,,1), (provides,1), (refer,2), (configure,1), (Interactive,2), (R,,1), (can,6), (build,3), (when,1), (easiest,1), (Maven](https://maven.apache.org/).,1), (Apache,1)...
+```
+
+缓存一部分数据
+
+```scala
+scala> linesWithSpark.cache()
+res11: linesWithSpark.type = MapPartitionsRDD[2] at filter at <console>:23
+
+scala> linesWithSpark.count()
+res12: Long = 20
+
+scala> linesWithSpark.count()
+res13: Long = 20
+```
+
+### Spark并行集合
+
+spark的并行集合是在一个已有的集合`scala Seq`上调用SparkContext的`parallelize`方法实现的。集合中的元素被复制到一个可并行操作的分布式数据集中。
+
+```scala
+scala> val data = Array(1,2,3,4,5)
+data: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> val disData = sc.parallelize(data)
+disData: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at <console>:24
+```
+
+一旦创建完成，集合就可以被并行操作，例如，可以用`disData.reduce((a,b) => a + b)`将这个数组的元素相加。
+
+并行集合一个很重要的参数是切片数(*slices*)，表示一个数据集切分的份数。Spark会在集群上为每一个切片运行一个任务。正常情况下，spark会自动的基于集群的状况自动设置切片的数目。也可以通过`parallelize`的第二个参数手动的设置（例如:`sc.parallelize(data,10)`）
+
+```scala
+scala> disData.collect()
+res4: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> disData.reduce((a,b) => a + b)
+res5: Int = 15
+```
+
+### 外部数据集
+
+Spark可以从任何一个支持Hadoop存储源创建的分布式数据集，包括本地文件系统，HDFS，Cassandra，HBase，Amazon S3等。Spark支持文本文件`text file`,`SequenceFiles`,`Hadoop InputFormat`。
+
+文本文件RDDs可以使用SparkContext的textFile方法创建。在这个方法里面传入文件的URI（机器上的本地路径或`hdfs://`,`s3n`），然后会将文件读取成一个行集合。
+
+```scala
+scala> val distFile = sc.textFile("data.txt")
+distFile: org.apache.spark.rdd.RDD[String] = MappedRDD@1d4cee08
+```
+
+一旦创建完成，`disFile`就能做到数据集操作。
+
+```scala
+disFile.map(s => s.length).reduce((a,b) => a + b)
+```
+
+**Spark 读文件时**：
+
+- 如果使用本地文件系统路径，文件必须能在 work 节点上用相同的路径访问到。要么复制文件到所有的 workers，要么使用网络的方式共享文件系统。
+- 所有 Spark 的基于文件的方法，包括 `textFile`，能很好地支持文件目录，压缩过的文件和通配符。例如，你可以使用 `textFile("/my/文件目录")`，`textFile("/my/文件目录/*.txt")` 和 `textFile("/my/文件目录/*.gz")`。
+- `textFile` 方法也可以选择第二个可选参数来控制切片(*slices*)的数目。默认情况下，Spark 为每一个文件块(HDFS 默认文件块大小是 64M)创建一个切片(*slice*)。但是你也可以通过一个更大的值来设置一个更高的切片数目。注意，你不能设置一个小于文件块数目的切片值。
+
+**除了文本文件，Spark 的 Scala API 支持其他几种数据格式**：
+
+- `SparkContext.sholeTextFiles` 让你读取一个包含多个小文本文件的文件目录并且返回每一个(filename, content)对。与 `textFile` 的差异是：它记录的是每个文件中的每一行。
+- 对于 [SequenceFiles](http://hadoop.apache.org/docs/current/api/org/apache/hadoop/mapred/SequenceFileInputFormat.html)，可以使用 SparkContext 的 `sequenceFile[K, V]` 方法创建，K 和 V 分别对应的是 key 和 values 的类型。像 [IntWritable](http://hadoop.apache.org/docs/current/api/org/apache/hadoop/io/IntWritable.html) 与 [Text](http://hadoop.apache.org/docs/current/api/org/apache/hadoop/io/Text.html) 一样，它们必须是 Hadoop 的 [Writable](http://hadoop.apache.org/docs/current/api/org/apache/hadoop/io/Writable.html) 接口的子类。另外，对于几种通用的 Writables，Spark 允许你指定原声类型来替代。例如： `sequenceFile[Int, String]` 将会自动读取 IntWritables 和 Text。
+- 对于其他的 Hadoop InputFormats，你可以使用 `SparkContext.hadoopRDD` 方法，它可以指定任意的 `JobConf`，输入格式(InputFormat)，key 类型，values 类型。你可以跟设置 Hadoop job 一样的方法设置输入源。你还可以在新的 MapReduce 接口(org.apache.hadoop.mapreduce)基础上使用 `SparkContext.newAPIHadoopRDD`(译者注：老的接口是 `SparkContext.newHadoopRDD`)。
+- `RDD.saveAsObjectFile` 和 `SparkContext.objectFile` 支持保存一个RDD，保存格式是一个简单的 Java 对象序列化格式。这是一种效率不高的专有格式，如 Avro，它提供了简单的方法来保存任何一个 RDD。
+
+### 从Mysql读取数据
+
+```scala
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import java.util.Properties
+
+object SparkSQLTest {
+	def main(args: Array[String]): Unit = {
+		val spark = SparkSession
+			.builder()
+			.appName("Spark SQL basic example")
+			.config("spark.some.config.option", "some-value")
+			.master("local")
+			.getOrCreate()
+		
+		val properties = new Properties();
+		properties.setProperty("user", "root")
+		properties.setProperty("password", "yourPassword")
+		val person: DataFrame = spark.read.jdbc("jdbc:mysql://127.0.0.1:3306/cems", "tableName", properties)
+		
+		person.show()
+	}
+}
 ```
 
 
