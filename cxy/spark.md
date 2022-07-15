@@ -433,11 +433,109 @@ object SparkSQLTest {
 }
 ```
 
+### Spark SQL
 
+1. 使用Spark创建函数进行创建
 
+`createDataset()`
 
+```scala
+scala> case class Person(name:String, age:Int, height:Int)
+defined class Person
 
+scala> val seq1 = Seq(Person("Michael",25,176),Person("Jack",15,180))
+seq1: Seq[Person] = List(Person(Michael,25,176), Person(Jack,15,180))
 
+scala> val ds1 = spark.createDataset(seq1)
+ds1: org.apache.spark.sql.Dataset[Person] = [name: string, age: int ... 1 more field]
+
+scala> ds1.show
++-------+---+------+
+|   name|age|height|
++-------+---+------+
+|Michael| 25|   176|
+|   Jack| 15|   180|
++-------+---+------+
+```
+
+`createeDataFrame()`
+
+```scala
+scala> case class Person(name:String, age:Int, height:Int)
+defined class Person
+
+scala> val seq1 = Seq(Person("Michael",25,176),Person("Jack",15,180))
+seq1: Seq[Person] = List(Person(Michael,25,176), Person(Jack,15,180))
+
+scala> val ds2 = spark.createDataFrame(seq1)
+ds2: org.apache.spark.sql.DataFrame = [name: string, age: int ... 1 more field]
+
+scala> ds2.show
++-------+---+------+
+|   name|age|height|
++-------+---+------+
+|Michael| 25|   176|
+|   Jack| 15|   180|
++-------+---+------+
+```
+
+2. 读取数据眼进行创建
+
+Spark SQL 支持的数据源包括：**文件**、**数据库**、**Hive**
+
+```scala
+// 方式1
+scala> val sc = spark.sparkContext
+sc: org.apache.spark.SparkContext = org.apache.spark.SparkContext@51b75097
+
+scala> val textRDD1 = sc.textFile("file:///Users/chenxinyu/app/spark-3.3.0-bin-hadoop3/examples/src/main/resources/people.json")
+textRDD1: org.apache.spark.rdd.RDD[String] = file:///Users/chenxinyu/app/spark-3.3.0-bin-hadoop3/examples/src/main/resources/people.json MapPartitionsRDD[1] at textFile at <console>:25
+
+scala> textRDD1.take(5)
+res3: Array[String] = Array({"name":"Michael"}, {"name":"Andy", "age":30}, {"name":"Justin", "age":19})
+
+// 方式2
+scala> val textRDD2 = spark.read.text("file:///Users/chenxinyu/app/spark-3.3.0-bin-hadoop3/examples/src/main/resources/people.json")
+textRDD2: org.apache.spark.sql.DataFrame = [value: string]
+
+scala> textRDD2.take(5)
+res7: Array[org.apache.spark.sql.Row] = Array([{"name":"Michael"}], [{"name":"Andy", "age":30}], [{"name":"Justin", "age":19}])
+
+```
+
+> 两种方法的区别在于返回的数据集类型不一样
+>
+> - `sc.textFile(path:String)`返回的数据集类型是：RDD[String]
+> - `spark.read.text(path:String)`返回的数据集类型是：DataFrame(DataSet[Row])
+
+3. 读取数据源数据
+
+Spark SQL支持通过JDBC读取外部数据库的数据作为数据源
+
+### RDD、DataFrame、DataSet的共性和转换
+
+在Spark中，RDD、DataFrame、DataSet三种类型的数据集是有一定的共同特性的，因此他们三者之间可以进行相互的转换
+
+#### RDD、DataFrame、DataSet的共性
+
+1. RDD、DataFrame、DataSet都是Spark平台下的分布式弹性数据集，为了处理超大型的数据提供了便利；
+2. 三者都有惰性计算机制，在进行创建、Transformation操作时，不会立即执行，只有在遇到Action操作的时候，才会遍历运算
+3. 三者都有Partition概念，可以进行Cache（缓存）操作，也可以进行CheckPoine（检查点）的操作。
+4. 三者都有许多相似的操作算子，如map、filter、groupByKey等
+5. 在对DataFrame和Dataset进行操作的时，很多情况下需要`spark.implicits._`的支持
+
+#### RDD、DataFrame、DataSet的转换
+
+![image-20220714191941253](spark.assets/image-20220714191941253.png)
+
+##### DataFrame/DataSet转RDD
+
+```scala
+val rdd1 = testDF.rdd
+val rdd2 = testDS.rdd
+```
+
+##### RDD转DataFrame
 
 
 

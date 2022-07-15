@@ -29,6 +29,12 @@ Version: 7.17.3, Build: default/tar/5ad023604c8d7416c9eb6c0eadb62b14e766caff/202
 
 ![image-20220510162552623](ES学习.assets/image-20220510162552623.png)
 
+### Mac安装Logstash
+
+官网下载，解压
+
+
+
 ## 基础
 
 ### 使用
