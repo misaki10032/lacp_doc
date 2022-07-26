@@ -59,57 +59,76 @@
     -   hive-site
 
     ```xml
+    <?xml version="1.0"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    
     <configuration>
-      
-    　　<property>
-            <name>hive.metastore.local</name>
-            <value>true</value>
-        </property>
-        <property>
-            <name>javax.jdo.option.ConnectionURL</name>
-            <value>jdbc:mysql://localhost:3306/metastore</value>
-        </property>
-     　　<!--mysql5以前的版本没有cj，com.mysql.jdbc.Driver-->
-        <property>
-            <name>javax.jdo.option.ConnectionDriverName</name>
-            <value>com.mysql.cj.jdbc.Driver</value>
-        </property>
-    　　<!--mysql用户名-->
-        <property>
-            <name>javax.jdo.option.ConnectionUserName</name>
-            <value>root</value>
-        </property>
-    　　<!--mysql密码-->
-    　　<property>
-            <name>javax.jdo.option.ConnectionPassword</name>
-            <value>密码</value>
-        </property>
-     
-    	<!-- hive用来存储不同阶段的map/reduce的执行计划的目录，同时也存储中间输出结果
-    	，默认是/tmp/<user.name>/hive,可以自己创建文件夹，我们实际一般会按组区分，然后组内自建一个tmp目录存>储 -->
-     
-        <property>
-            <name>hive.exec.local.scratchdir</name>
-            <value>/tmp/hive</value>
-        </property>
-        <property>
-            <name>hive.downloaded.resources.dir</name>
-                <value>/tmp/hive</value>
-        </property>
-        <property>
-            <name>hive.metastore.warehouse.dir</name>
-            <value>/data/hive/warehouse</value>
-        </property>
-        <property>
-            <name>hive.server2.logging.operation.log.location</name>
-            <value>/tmp/hive</value>
-        </property>
-     
+            <property>
+                    <name>javax.jdo.option.ConnectionURL</name>
+                    <value>jdbc:mysql://125.124.239.163:3306/metastore?createDatabaseIfNotExist=true</value><!--MySQL地址metastore是元数据库的名称，需要在mysql中创建相同名字的数据库-->
+            </property>
+            <property>
+                    <name>javax.jdo.option.ConnectionDriverName</name>
+                    <value>com.mysql.cj.jdbc.Driver</value><!--MySQL驱动-->
+            </property>
+            <property>
+                    <name>javax.jdo.option.ConnectionUserName</name>
+                    <value>root</value><!--MySQL用户名-->
+            </property>
+            <property>
+                    <name>javax.jdo.option.ConnectionPassword</name>
+                    <value>axing0000</value><!--MySQL密码-->
+            </property>
+            
+            <property>
+                    <name>hive.metastore.schema.verification</name>
+                    <value>false</value>
+            </property>
+    
+            <property>
+                    <name>system:java.io.tmpdir</name>
+                    <value>/tmp/hive/java</value>
+            </property>
+            <property>
+                    <name>system:user.name</name>
+                    <value>${user.name}</value>
+            </property>
+    
+            <property>
+                    <name>hive.server2.transport.mode</name>
+                    <value>binary</value>
+                    <description>
+                            Expects one of [binary, http]. Transport mode of HiveServer2.
+                    </description>
+            </property>
+    
+            <property>
+                    <name>hive.server2.thrift.port</name>
+                    <value>10000</value>
+                    <description>Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'.</description>
+            </property>
+    
+            <property>
+                    <name>hive.server2.webui.host</name>
+                    <value>127.0.0.1</value>
+            </property>
+    
+            <property>
+                    <name>hive.server2.webui.port</name>
+                    <value>10002</value>
+            </property>
+    
+            <property>
+                    <name>hive.server2.enable.doAs</name>
+                    <value>false</value> 
+            </property>
+    
+                    
     </configuration>
     ```
-
+    
     -   初始化仓库
-
+    
     ```shell
     # 初始化
     ➜  ~ schematool -initSchema -dbType mysql
@@ -117,9 +136,9 @@
     Initialization script completed
     schemaTool completed
     ```
-
+    
     -   启动metastore服务
-
+    
     ```shell
     ➜  bin ./hive --service metastore &
     [1] 61217
@@ -132,8 +151,109 @@
     SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
     hive>
     ```
-
     
+
+
+
+# Hive基础
+
+>Hive 由 `Facebook` 实现并开源，是基于` Hadoop` 的一个数据仓库工具，可以将结构化的数据映射为一张数据库表，并提供 HQL(Hive SQL)查询功能，底层数据是存储在 `HDFS `上。Hive的本质是将 SQL 语句转换为 MapReduce 任务运行，使不熟悉 MapReduce 的用户很方便地利用 HQL 处理和计算 HDFS 上的结构化的数据，适用于离线的批量数据计算。
+>
+>Hive 依赖于 HDFS 存储数据，Hive 将 HQL 转换成 MapReduce 执行，所以说 Hive 是基于 Hadoop 的一个``数据仓库``工具，实质就是一款基于 HDFS 的 MapReduce计算框架，对存储在 HDFS 中的数据进行分析和管理。
+
+## 简介
+
+### 为什么要使用Hive
+
+- 直接使用 MapReduce 所面临的问题：    
+  - 人员学习成本太高   
+  - 项目周期要求太短    
+  - MapReduce 实现复杂查询逻辑开发难度太大
+- 为什么要使用 Hive：    
+  - 更友好的接口：操作接口采用类 SQL 的语法，提供快速开发的能力    
+  - 更低的学习成本：避免了写 MapReduce，减少开发人员的学习成本    
+  - 更好的扩展性：可自由扩展集群规模而无需重启服务，还支持用户自定义函数
+
+### Hive的特点
+
+- 优点
+  - 可扩展性，横向扩展，Hive可以自由的扩展集群的规模，一般情况下不需要重启服务横向扩展：通过分担压力的方式扩展集群规模纵向扩展
+  - 延展性，Hive支持自定义函数，用户可以根据自己的需求来实现自己的函数
+  - 容错性，可以保障即使有节点出现问题，SQL语句仍可以完成执行
+- 缺点
+  - 不吃鸡记录级别的增删改操作，但是用户可以通过生成新表或者将查询结果导入到文件中
+  - Hive查询时间很长，因为MapReduce Job的启动过程消耗很长时间，所以不能用在交互查询系统中
+  - Hive不支持事务，主要用来做`OLAP(联机分析处理)`而不是`OLTP(联机事务处理)`
+
+### 对比RDBMS
+
+|    对比项    |          Hive          |         RDBMS          |
+| :----------: | :--------------------: | :--------------------: |
+|   查询语言   |          HQL           |          SQL           |
+|   数据存储   |          HDFS          | Raw Device or Local FS |
+|    执行器    |       Mapreduce        |        Executor        |
+|   数据插入   | 支持批量导入和单条插入 |  支持单条或者批量导入  |
+|   数据操作   |        覆盖追加        |      行级更新删除      |
+| 处理数据规模 |           大           |           小           |
+|   执行延时   |           高           |           低           |
+|     分区     |          支持          |          支持          |
+|     索引     |  0.8之后加入简单索引   |      支持复杂索引      |
+|    扩展性    |        高（好）        |       有限（查）       |
+| 数据加载模式 |     读时模式（快）     |     写时模式（慢）     |
+|   应用场景   |      海量数据查询      |        实时查询        |
+
+## Hive架构
+
+![image-20220722153519526](Hive.assets/image-20220722153519526.png)
+
+## Hive特性
+
+1.Hive 的存储结构包括数据库、表、视图、分区和表数据等。数据库，表，分区等等都对应 HDFS 上的一个目录。表数据对应 HDFS 对应目录下的文件。
+
+2.Hive 中所有的数据都存储在 HDFS 中，没有专门的数据存储格式，因为 Hive 是读模式（Schema On Read），可支持 TextFile，SequenceFile，RCFile 或者自定义格式等
+
+3.只需要在创建表的时候告诉 Hive 数据中的列分隔符和行分隔符，Hive 就可以解析数据    Hive 的默认列分隔符：控制符 Ctrl + A，\x01    Hive 的默认行分隔符：换行符 \n
+
+4.Hive 中包含以下数据模型：
+
+- database：在 HDFS 中表现为${hive.metastore.warehouse.dir}目录下一个文件夹   
+- table：在 HDFS 中表现所属 database 目录下一个文件夹
+- external table：与 table 类似，不过其数据存放位置可以指定任意 HDFS 目录路径
+- partition：在 HDFS 中表现为 table 目录下的子目录
+- bucket：在 HDFS 中表现为同一个表目录或者分区目录下根据某个字段的值进行 hash 散列之后的多个文件    
+- view：与传统数据库类似，只读，基于基本表创建
+
+5.Hive 的元数据存储在 RDBMS 中，除元数据外的其它所有数据都基于 HDFS 存储。默认情况下，Hive 元数据保存在内嵌的 Derby 数据库中，只能允许一个会话连接，只适合简单的测试。实际生产环境中不适用，为了支持多用户会话，则需要一个独立的元数据库，使用MySQL 作为元数据库，Hive 内部对 MySQL 提供了很好的支持。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # hive 语法
 
