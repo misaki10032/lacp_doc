@@ -1,5 +1,4 @@
-<!-- _navbar.md -->
-* [首页](/)
+<!-- docs/_sidebar.md -->
 * 我的博客
   - [学习随笔](cxy/杂谈.md)
   - [clickhouse](cxy/clickhouse.md)
@@ -13,3 +12,6 @@
   - [spark](cxy/spark.md)
   - [Sqoop学习](cxy/Sqoop学习.md)
   - [storm](cxy/storm.md)
+* 学习交流平台
+  - [文档资料](学习交流平台/学习交流平台.md)
+* 待续～ 

@@ -6,8 +6,8 @@
 
 > Misaki的个人博客
 
-- 学习随笔
-- 个人网站搭建记录
+- 对未来真正的慷慨 , 是把一切献给现在
+- 频频回头的人走不了远路
 
 [Gitee](https://gitee.com/cxy_blank)
 [GitHub](https://github.com/misaki10032)
