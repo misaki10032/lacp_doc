@@ -34,7 +34,7 @@
     - Docker
       - [Docker-安装](cxy/其他/Docker/docker安装.md)
       - [Docker-笔记](cxy/其他/Docker/Docker镜像命令.md)
-    - [Dubbo学习笔记]()
+    - [Dubbo学习笔记](cxy/其他/Dubbo/Dubbo.md)
     - Python
       - [python-简述](cxy/其他/Python基础/Python基础-简述.md)
       - [python-语法](cxy/其他/Python基础/Python基础-语法.md)
