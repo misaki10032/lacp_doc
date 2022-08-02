@@ -1,12 +1,10 @@
-# 这里是陈新予的个人博客
-
 Hello～
 
 导航～
 * 学习交流平台
 
   * [文档资料](学习交流平台/学习交流平台.md)
-* 我的博客
+* CXY的博客
   * [学习随笔](cxy/杂谈.md)
   * [clickhouse](cxy/clickhouse.md)
   * [ES学习](cxy/ES学习.md.md)
