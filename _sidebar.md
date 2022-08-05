@@ -2,8 +2,8 @@
 * 我的博客
   * 日常记录
     - [记录](cxy/日常记录/杂谈.md)
-    - [Go笔记](cxy/日常记录/Go.md)
     - [学习交流平台](学习交流平台/学习交流平台.md)
+    - [NoneBot配合go-cqhttp搭建QQ机器人](学习记录/NoneBot的搭建与使用.md)
   * 大数据
     - [clickhouse学习笔记](cxy/大数据/clickhouse.md)
     - [flink学习笔记](cxy/大数据/flink.md)
@@ -36,6 +36,7 @@
       - [Docker-安装](cxy/其他/Docker/docker安装.md)
       - [Docker-笔记](cxy/其他/Docker/Docker镜像命令.md)
     - [Dubbo学习笔记](cxy/其他/Dubbo/Dubbo.md)
+    - [Go笔记](cxy/日常记录/Go.md)
     - Python
       - [python-简述](cxy/其他/Python基础/Python基础-简述.md)
       - [python-语法](cxy/其他/Python基础/Python基础-语法.md)

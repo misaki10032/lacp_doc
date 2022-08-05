@@ -9,3 +9,5 @@
   - [Spark学习笔记](cxy/大数据/spark.md)
   - [Sqoop学习笔记](cxy/大数据/Sqoop学习.md)
   - [Storm学习笔记](cxy/大数据/storm.md)
+* 学习记录
+  * [NoneBot配合go-cqhttp搭建QQ机器人](学习记录/NoneBot的搭建与使用.md)
