@@ -384,11 +384,11 @@ services:
 
 配置完成后即可使用 `docker-compose up -d` 命令来启动机器人并在后台运行。
 
+### 机器人效果展示
 
+![image-20220805175427770](NoneBot的搭建与使用.assets/image-20220805175427770.png)![image-20220805175512997](NoneBot的搭建与使用.assets/image-20220805175512997.png)
 
-
-
-
+![image-20220805175437254](NoneBot的搭建与使用.assets/image-20220805175437254.png)
 
 
 
