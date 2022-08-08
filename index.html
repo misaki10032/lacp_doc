@@ -34,7 +34,7 @@
       repo: 'https://github.com/misaki10032',
       // config 404 page
       notFoundPage: true,
-      
+
       // search配置参数
       search: {
         maxAge: 86400000, // 过期时间，单位毫秒，默认一天
@@ -43,21 +43,21 @@
         noData: '找不到结果',
         depth: 3
       },
-      
+
       // 字数统计
       count: {
-        countable:true,
-        fontsize:'0.9em',
-        color:'rgb(90,90,90)',
-        language:'chinese'
+        countable: true,
+        fontsize: '0.9em',
+        color: 'rgb(90,90,90)',
+        language: 'chinese'
       },
-	
+
       // 折叠目录
       plugins: [
-        function(hook, vm) {
-          hook.doneEach(function() {
+        function (hook, vm) {
+          hook.doneEach(function () {
             document.querySelectorAll(".sidebar-nav > ul > li").forEach(
-              function(node, index, nodelist) {
+              function (node, index, nodelist) {
                 var span = document.createElement("span");
                 span.innerHTML = node.firstChild.data;
                 // span.style.cursor = "pointer";
@@ -72,18 +72,39 @@
                 };*/
                 node.firstChild.replaceWith(span);
                 // node.lastChild.style.display = "none";
-				node.lastChild.style.display = "block";
-            });
+                node.lastChild.style.display = "block";
+              });
             var active = document.querySelector(".sidebar-nav li.active");
             if (active) {
               active.parentElement.style.display = "block";
             }
+
+            let res = html.match(/==(.+?)==/g);
+            if (res) {
+              for (var i = 0; i < res.length; i++) {
+                html = html.replace(res[i], `<mark>` + res[i].replace(/==/g, "") + `</mark>`);
+              }
+            }
           });
+
+          // hook.beforeEach(function (html) {
+          //   //适配Markdown的====高亮语法
+          //   let res = html.match(/==(.+?)==/g);
+          //   if (res) {
+          //     for (var i = 0; i < res.length; i++) {
+          //       html = html.replace(res[i], `<mark>` + res[i].replace(/==/g, "") + `</mark>`);
+          //     }
+          //   }
+          //   //将更新时间加到文档的最顶部
+          //   return '> Last Modified {docsify-updated}'
+          //     + '\n----\n'
+          //     + html;
+          // });
         }
       ]
-      
+
     }
-    	
+
     // 使用离线功能
     if (typeof navigator.serviceWorker !== 'undefined') {
       navigator.serviceWorker.register('sw.js')
