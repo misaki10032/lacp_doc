@@ -9,11 +9,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link href="https://img1.baidu.com/it/u=1306375176,2490405343&fm=253&fmt=auto?w=200&h=200" rel="icon">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
+  <script src="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
 </head>
 
 <body>
   <div id="app"></div>
   <script>
+    var num = 0;
+    mermaid.initialize({ startOnLoad: false });
 
     window.$docsify = {
       // docsify config
@@ -51,7 +56,20 @@
         color: 'rgb(90,90,90)',
         language: 'chinese'
       },
-
+      disqus: 'shortname',
+      // 语法适配 
+      markdown: {
+        renderer: {
+          code: function (code, lang) {
+            if (lang === "mermaid") {
+              return (
+                '<div class="mermaid">' + mermaid.render('mermaid-svg-' + num++, code) + "</div>"
+              );
+            }
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      },
       // 折叠目录
       plugins: [
         function (hook, vm) {
@@ -60,18 +78,8 @@
               function (node, index, nodelist) {
                 var span = document.createElement("span");
                 span.innerHTML = node.firstChild.data;
-                // span.style.cursor = "pointer";
                 span.style.fontWeight = "bold";
-                /*span.onclick = function(event) {
-                  var ul = event.target.nextElementSibling;
-                  if (ul.style.display === "none") {
-                    ul.style.display = "block";
-                  } else {
-                    ul.style.display = "none";
-                  }
-                };*/
                 node.firstChild.replaceWith(span);
-                // node.lastChild.style.display = "none";
                 node.lastChild.style.display = "block";
               });
             var active = document.querySelector(".sidebar-nav li.active");
@@ -79,6 +87,7 @@
               active.parentElement.style.display = "block";
             }
 
+            // 支持Mark高亮语句
             let res = html.match(/==(.+?)==/g);
             if (res) {
               for (var i = 0; i < res.length; i++) {
@@ -86,20 +95,6 @@
               }
             }
           });
-
-          // hook.beforeEach(function (html) {
-          //   //适配Markdown的====高亮语法
-          //   let res = html.match(/==(.+?)==/g);
-          //   if (res) {
-          //     for (var i = 0; i < res.length; i++) {
-          //       html = html.replace(res[i], `<mark>` + res[i].replace(/==/g, "") + `</mark>`);
-          //     }
-          //   }
-          //   //将更新时间加到文档的最顶部
-          //   return '> Last Modified {docsify-updated}'
-          //     + '\n----\n'
-          //     + html;
-          // });
         }
       ]
 
@@ -110,7 +105,7 @@
       navigator.serviceWorker.register('sw.js')
     }
   </script>
-  <!-- Docsify v4 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/disqus.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
@@ -120,6 +115,9 @@
   <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-sql.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+
+
+
 </body>
 
 </html>
