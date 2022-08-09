@@ -86,14 +86,18 @@
             if (active) {
               active.parentElement.style.display = "block";
             }
+          });
+
+          hook.beforeEach(function (content) {
 
             // 支持Mark高亮语句
-            let res = html.match(/==(.+?)==/g);
+            let res = content.match(/==(.+?)==/g);
             if (res) {
               for (var i = 0; i < res.length; i++) {
-                html = html.replace(res[i], `<mark>` + res[i].replace(/==/g, "") + `</mark>`);
+                content = content.replace(res[i], `<mark>` + res[i].replace(/==/g, "") + `</mark>`);
               }
             }
+            return content;
           });
         }
       ]
