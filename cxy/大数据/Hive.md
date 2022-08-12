@@ -65,7 +65,7 @@
     <configuration>
             <property>
                     <name>javax.jdo.option.ConnectionURL</name>
-                    <value>jdbc:mysql://125.124.239.163:3306/metastore?createDatabaseIfNotExist=true</value><!--MySQL地址metastore是元数据库的名称，需要在mysql中创建相同名字的数据库-->
+                    <value>jdbc:mysql://***.***.***.***:3306/metastore?createDatabaseIfNotExist=true</value><!--MySQL地址metastore是元数据库的名称，需要在mysql中创建相同名字的数据库-->
             </property>
             <property>
                     <name>javax.jdo.option.ConnectionDriverName</name>
@@ -77,7 +77,7 @@
             </property>
             <property>
                     <name>javax.jdo.option.ConnectionPassword</name>
-                    <value>axing0000</value><!--MySQL密码-->
+                    <value>******</value><!--MySQL密码-->
             </property>
             
             <property>
