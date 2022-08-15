@@ -429,6 +429,19 @@ This command was run using /usr/local/hadoop/share/hadoop/common/hadoop-common-3
 527 SecondaryNameNode
 ```
 
+### 清空缓存重启
+
+```bash
+# 停止全部
+stop-all.sh
+# 删除日志缓存
+rm -rf /tmp/hadoop-chenxinyu/dfs/*
+# 格式化nomenode
+hadoop namenode -format
+# 启动
+start-all.sh
+```
+
 ## HDFS使用
 
 #### HDFS shell
