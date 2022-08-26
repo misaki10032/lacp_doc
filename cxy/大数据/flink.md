@@ -654,6 +654,408 @@ public class GroupedProcessingTimeWindowSample {
 }
 ```
 
+# Flink Table API
+
+> maven依赖如下
+
+```xml
+<dependency>
+  <groupId>org.apache.flink</groupId>
+  <artifactId>flink-table-api-java</artifactId>
+  <version>${flink.version}</version>
+</dependency>
+
+<dependency>
+  <groupId>org.apache.flink</groupId>
+  <artifactId>flink-table-api-java-bridge</artifactId>
+  <version>${flink.version}</version>
+</dependency>
+
+<dependency>
+  <groupId>org.apache.flink</groupId>
+  <artifactId>flink-table-planner_2.12</artifactId>
+  <version>${flink.version}</version>
+</dependency>
+
+<dependency>
+  <groupId>org.apache.flink</groupId>
+  <artifactId>flink-table-common</artifactId>
+  <version>${flink.version}</version>
+</dependency>
+```
+
+## Table API和SQL程序的通用结构
+
+```java
+// tableAPI 环境
+TableEnvironment tableEnv = TableEnvironment.create(/*…*/);
+
+// 创建来源表
+tableEnv.createTemporaryTable("SourceTable", TableDescriptor.forConnector("datagen")
+    .schema(Schema.newBuilder()
+      .column("f0", DataTypes.STRING())
+      .build())
+    .option(DataGenOptions.ROWS_PER_SECOND, 100)
+    .build());
+
+// 创建sink表（ddl语句）
+tableEnv.executeSql("CREATE TEMPORARY TABLE SinkTable WITH ('connector' = 'blackhole') LIKE SourceTable");
+
+// 创建表对象
+Table table2 = tableEnv.from("SourceTable");
+
+// 创建查询对象
+Table table3 = tableEnv.sqlQuery("SELECT * FROM SourceTable");
+
+// 将sourceTable插入sinkTable
+TableResult tableResult = table2.insertInto("SinkTable").execute();
+```
+
+## 创建TableEnvironment
+
+TableEnvironment职责
+
+- 在内部的catalog中注册Table
+- 注册外部的Catalog
+- 加载可拔插模块
+- 执行SQL查询
+- 注册自定义函数
+- DataStream和Table之间转换
+
+> 不能在同一条查询中使用不同的TableEnvironment中的表。每个Env中的表是隔离的。
+
+**TbaleEnvironment可以通过静态方法创建**
+
+```java
+EnvironmentSettings settings = EnvironmentSettings
+    .newInstance()
+    .inStreamingMode()
+    .build();
+
+TableEnvironment tEnv = TableEnvironment.create(settings);
+```
+
+**可以从现有的StreamExecutionEnvironment中创建一个StreamEnvironment与DataStream API互操作**
+
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+```
+
+## 在Catalog中创建表
+
+TableEnvironment中维护者一个由标识符（identifiler）创建的表catalog的映射。标识符由三个部分组成：
+
+- [catalog](https://nightlies.apache.org/flink/flink-docs-release-1.15/zh/docs/dev/table/catalogs/)名称
+- 数据库名称
+- 对象名称
+
+如果catalog或者数据库没有指明，就会使用当前默认值。
+
+Table可以是虚拟的（`视图Views`）也可以是常规的（`表Tables`）。Views可以从已经存在的Table中创建，一般是TableAPI 或者是SQL查询的结果。表Tables描述的是外部数据，例如（==文件、数据库表、消息队列==）
+
+### 临时表和永久表
+
+临时表-`Temporary Table`
+
+永久表- `Permanent Table`
+
+> 表可以是**临时**的，并与单个 Flink 会话（session）的生命周期相关，也可以是永久的，并且在多个 Flink 会话和群集（cluster）中可见。
+>
+> **永久表**需要 [catalog](https://nightlies.apache.org/flink/flink-docs-release-1.15/zh/docs/dev/table/catalogs/)（例如 `Hive Metastore`）以维护表的元数据。一旦永久表被创建，**它将对任何连接到 catalog 的 Flink 会话可见且持续存在，直至被明确删除**。
+>
+> **临时表**通常保存于内存中并且仅在创建它们的 Flink 会话持续期间存在。这些表对于其它会话是不可见的。它们不与任何 `catalog` 或者数据库绑定但可以在一个命名空间（`namespace`）中创建。**即使它们对应的数据库被删除，临时表也不会被删除**。
+
+#### 屏蔽（Shadowing）
+
+可以使用与已经存在的永久表去注册临时表。临时表会屏蔽永久表，并且只要临时表存在，永久表就无法访问。所有使用该标识符的查询都将作用与临时表
+
+>这可能对实验（experimentation）有用。它允许先对一个临时表进行完全相同的查询，例如只有一个子集的数据，或者数据是不确定的。一旦验证了查询的正确性，就可以对实际的生产表进行查询。
+
+### 创建表
+
+#### 虚拟表
+
+java Table API如下
+
+```java
+// 获取环境
+TableEnvironment tableEnv = ...;
+
+// table is the result of a simple projection query 
+Table projTable = tableEnv.from("X").select(...);
+
+// register the Table projTable as table "projectedTable"
+tableEnv.createTemporaryView("projectedTable", projTable);
+```
+
+> **注意：** 从传统数据库系统的角度来看，`Table` 对象与 `VIEW` 视图非常像。也就是，定义了 `Table` 的查询是没有被优化的， 而且会被内嵌到另一个引用了这个注册了的 `Table`的查询中。如果多个查询都引用了同一个注册了的`Table`，那么它会被内嵌每个查询中并被执行多次， 也就是说注册了的`Table`的结果**不会**被共享。
+
+#### Connector Tables
+
+可以通过Connector声明。Connector描述了存储表数据的外部系统。存储系统例如Kafka或者常规的文件系统
+
+```java
+// Using table descriptors
+final TableDescriptor sourceDescriptor = TableDescriptor.forConnector("datagen")
+    .schema(Schema.newBuilder()
+    .column("f0", DataTypes.STRING())
+    .build())
+    .option(DataGenOptions.ROWS_PER_SECOND, 100)
+    .build();
+
+tableEnv.createTable("SourceTableA", sourceDescriptor);
+tableEnv.createTemporaryTable("SourceTableB", sourceDescriptor);
+
+// Using SQL DDL
+tableEnv.executeSql("CREATE [TEMPORARY] TABLE MyTable (...) WITH (...)");
+```
+
+### 扩展表标识符
+
+表是通过三元标识符注册，包括catalog名、数据库名和表名。
+
+用户可以指定一个catalog和数据库作为当前`catalog`和`当前数据库`。制定后前两个部门就会被省略。如果没有指定，会使用当前的catalog和当前数据库。用户也可以用过Table API或SQL切换当前的catalog和当前数据库。
+
+```java
+TableEnvironment tEnv = ...;
+tEnv.useCatalog("custom_catalog");
+tEnv.useDatabase("custom_database");
+
+Table table = ...;
+
+// 注册'exampleView'视图在'custom_catalog'这个catalog中
+// 自动在数据库'custom_database'中 
+tableEnv.createTemporaryView("exampleView", table);
+
+// 注册'exampleView'视图在'custom_catalog'这个catalog中
+// 指定数据库'other_database' 
+tableEnv.createTemporaryView("other_database.exampleView", table);
+
+// 注册'example.View'视图在'custom_catalog'这个catalog中
+// 自动在数据库'custom_database' 
+tableEnv.createTemporaryView("`example.View`", table);
+
+// 注册'exampleView'视图在'other_catalog'这个指定catalog中
+// 指定数据库'other_database' 
+tableEnv.createTemporaryView("other_catalog.other_database.exampleView", table);
+```
+
+## 查询表
+
+### Table API
+
+```java
+// get a TableEnvironment
+TableEnvironment tableEnv = ...; // see "Create a TableEnvironment" section
+
+// 注册‘Orders’源表
+
+// 获取Orders表对象
+Table orders = tableEnv.from("Orders");
+// 计算来自`FRANCE`的所有顾客的`revenue`
+Table revenue = orders
+  .filter($("cCountry").isEqual("FRANCE"))
+  .groupBy($("cID"), $("cName"))
+  .select($("cID"), $("cName"), $("revenue").sum().as("revSum"));
+
+// emit or convert Table
+// execute query
+```
+
+### SQL
+
+**查询操作**
+
+```java
+// get a TableEnvironment
+TableEnvironment tableEnv = ...; // see "Create a TableEnvironment" section
+
+// 注册‘Orders’源表
+
+// SQL
+Table revenue = tableEnv.sqlQuery(
+    "SELECT cID, cName, SUM(revenue) AS revSum " +
+    "FROM Orders " +
+    "WHERE cCountry = '2' " +
+    "GROUP BY cID, cName"
+);
+
+// emit or convert Table
+// execute query
+```
+
+**插入**:将查询的结果插入到已注册的表中
+
+```java
+// 获取环境
+TableEnvironment tableEnv = ...; // see "Create a TableEnvironment" section
+
+// 注册‘Orders’源表
+// 注册"RevenueFrance"输出表
+
+// 执行SQL
+tableEnv.executeSql(
+    "INSERT INTO RevenueFrance " +
+    "SELECT cID, cName, SUM(revenue) AS revSum " +
+    "FROM Orders " +
+    "WHERE cCountry = 'FRANCE' " +
+    "GROUP BY cID, cName"
+);
+```
+
+> Table API 和 SQL返回的都是Table对象，所以两个可以混用
+>
+> - 可以在SQL查询返回的table对象上定义TableAPI的查询
+> - 在TableEnvironment中注册的结果表可以在SQL查询的FROM子句中引用，通过这种方法可以在Table API查询的结果集上定义SQL查询。
+
+## 输出表
+
+Table通过写入TableSink进行输出。`TableSink`是一个通用接口，用于多种文件格式(**CSV、Apache Parquet、Apache Avro**)、存储系统（**JDBC、Apache Hbase、Apache Cassandra、Elasticsearch**）、消息队列（**Kafka、RabbitMQ**）
+
+批处理Table只能写入BatchTableSink，流处理Table需要制定写入AppendStreamTableSink，RetractStreamTableSink或者UpsertStreamTableSink。
+
+> 请参考文档 [Table Sources & Sinks](https://nightlies.apache.org/flink/flink-docs-release-1.15/zh/docs/dev/table/sourcessinks/) 以获取更多关于可用 Sink 的信息以及如何自定义 `DynamicTableSink`。
+
+方法 `Table.insertInto(String tableName)` 定义了一个完整的端到端管道将源表中的数据传输到一个被注册的输出表中。 该方法通过名称在 catalog 中查找输出表并确认 `Table schema` 和输出表 `schema` 一致。 可以通过方法 `TablePipeline.explain()` 和 `TablePipeline.execute()` 分别来解释和执行一个数据流管道。
+
+```java
+// 获取Table环境
+TableEnvironment tableEnv = ...; // see "Create a TableEnvironment" section
+
+// 创建输出表
+final Schema schema = Schema.newBuilder()
+    .column("a", DataTypes.INT())
+    .column("b", DataTypes.STRING())
+    .column("c", DataTypes.BIGINT())
+    .build();
+
+tableEnv.createTemporaryTable("CsvSinkTable", TableDescriptor.forConnector("filesystem")
+    .schema(schema)
+    .option("path", "/path/to/file")
+    .format(FormatDescriptor.forFormat("csv")
+        .option("field-delimiter", "|")
+        .build())
+    .build());
+
+// 使用Table API 或 SQL获取结果表
+Table result = ...;
+
+// 写入数据管道
+TablePipeline pipeline = result.insertInto("CsvSinkTable");
+
+// 输出详情细节展示
+pipeline.printExplain();
+
+// 将结果表发送给注册了的输出表
+pipeline.execute();
+```
+
+## 执行查询与翻译
+
+不论输入数据源是流式的还是批式的，Table API 和 SQL查询都会被转换成DataStream程序。查询在内部表示为逻辑查询计划，并被翻译成两个阶段：
+
+1. 优化逻辑执行计划
+2. 翻译成DataStream程序
+
+Table API或者SQL查询在下列情况下会被翻译
+
+- 当`TableEnvironment.executeSql()`被调用的时候。该方法用来执行一个SQL语句，一旦该方法被调用，SQL语句立刻被翻译成DataStream
+- 当`TablePipeline.execute()`被调用时。该方法是用来执行一个源表到输出表的数据流，一旦该方法被调用，Table API程序立刻被翻译成DataStream
+- 当`Table.execute()`被调用。将一个表的内容收集到本地，一旦方法被调用，Table API立刻被翻译
+- 当`StatementSet.execute()`被调用时。TablePipeline（通过StatementSet.add()输出给某个Sink）和insert语句会被先缓存到StatementSet中，StatementSet.execute()方法被调用的时候，所有的sink会被优化成一张有向无环图。
+- 当`Table`被转化成DataStream时。转换完成后，他就成为一个普通的DataStream程序，并会在调用`StreamExecutionEnvironment.execute()`时被执行。
+
+## 查询优化
+
+Apache Flink使用并扩展了Calcite来执行复杂的查询优化。
+
+- 基于 Apache Calcite 的子查询解相关
+- 投影剪裁
+- 分区剪裁
+- 过滤器下推
+- 子计划消除重复数据以避免重复计算
+- 特殊子查询重写，包括两部分：
+  - 将 IN 和 EXISTS 转换为 left semi-joins
+  - 将 NOT IN 和 NOT EXISTS 转换为 left anti-join
+- 可选 join 重新排序
+  - 通过 `table.optimizer.join-reorder-enabled` 启用
+
+>**注意：** 当前仅在子查询重写的结合条件下支持 `IN` / `EXISTS` / `NOT IN` / `NOT EXISTS`。
+>
+>优化器不仅基于计划，而且还基于可从数据源获得的丰富统计信息以及每个算子（例如 io，cpu，网络和内存）的细粒度成本来做出明智的决策。
+>
+>高级用户可以通过 `CalciteConfig` 对象提供自定义优化，可以通过调用 `TableEnvironment＃getConfig＃setPlannerConfig` 将其提供给 TableEnvironment。
+
+## 解释表
+
+Table API 提供了一种机制来解释计算 `Table` 的逻辑和优化查询计划。 这是通过 `Table.explain()` 方法或者 `StatementSet.explain()` 方法来完成的。`Table.explain()` 返回一个 Table 的计划。`StatementSet.explain()` 返回多 sink 计划的结果。它返回一个描述三种计划的字符串：
+
+1. 关系查询的抽象语法树（the Abstract Syntax Tree），即未优化的逻辑查询计划，
+2. 优化的逻辑查询计划，以及
+3. 物理执行计划。
+
+```java
+StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+DataStream<Tuple2<Integer, String>> stream1 = env.fromElements(new Tuple2<>(1, "hello"));
+DataStream<Tuple2<Integer, String>> stream2 = env.fromElements(new Tuple2<>(1, "hello"));
+
+// explain Table API
+Table table1 = tEnv.fromDataStream(stream1, $("count"), $("word"));
+Table table2 = tEnv.fromDataStream(stream2, $("count"), $("word"));
+Table table = table1
+  .where($("word").like("F%"))
+  .unionAll(table2);
+
+System.out.println(table.explain());
+```
+
+![image-20220826153705993](flink.assets/image-20220826153705993.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Flink 客户端操作
 
 查看客户端
@@ -805,6 +1207,698 @@ CREATE TABLE my_mysql_table (
 > flink SQL插入语句TIMESTAMP 类型读取当前时间可以使用 LOCALTIMESTAMP
 
 ![image-20220614151149888](flink.assets/image-20220614151149888.png)
+
+### 时区
+
+**配置时区参数**
+
+- 配置相同时区的参数
+
+  可以通过配置作业的时区调整时间类型数据的输出结果。默认时区为东八区
+
+  - 时区列表
+
+  ```txt
+  Africa/Abidjan
+  Africa/Accra
+  Africa/Addis_Ababa
+  Africa/Algiers
+  Africa/Asmara
+  Africa/Asmera
+  Africa/Bamako
+  Africa/Bangui
+  Africa/Banjul
+  Africa/Bissau
+  Africa/Blantyre
+  Africa/Brazzaville
+  Africa/Bujumbura
+  Africa/Cairo
+  Africa/Casablanca
+  Africa/Ceuta
+  Africa/Conakry
+  Africa/Dakar
+  Africa/Dar_es_Salaam
+  Africa/Djibouti
+  Africa/Douala
+  Africa/El_Aaiun
+  Africa/Freetown
+  Africa/Gaborone
+  Africa/Harare
+  Africa/Johannesburg
+  Africa/Juba
+  Africa/Kampala
+  Africa/Khartoum
+  Africa/Kigali
+  Africa/Kinshasa
+  Africa/Lagos
+  Africa/Libreville
+  Africa/Lome
+  Africa/Luanda
+  Africa/Lubumbashi
+  Africa/Lusaka
+  Africa/Malabo
+  Africa/Maputo
+  Africa/Maseru
+  Africa/Mbabane
+  Africa/Mogadishu
+  Africa/Monrovia
+  Africa/Nairobi
+  Africa/Ndjamena
+  Africa/Niamey
+  Africa/Nouakchott
+  Africa/Ouagadougou
+  Africa/Porto-Novo
+  Africa/Sao_Tome
+  Africa/Timbuktu
+  Africa/Tripoli
+  Africa/Tunis
+  Africa/Windhoek
+  America/Adak
+  America/Anchorage
+  America/Anguilla
+  America/Antigua
+  America/Araguaina
+  America/Argentina/Buenos_Aires
+  America/Argentina/Catamarca
+  America/Argentina/ComodRivadavia
+  America/Argentina/Cordoba
+  America/Argentina/Jujuy
+  America/Argentina/La_Rioja
+  America/Argentina/Mendoza
+  America/Argentina/Rio_Gallegos
+  America/Argentina/Salta
+  America/Argentina/San_Juan
+  America/Argentina/San_Luis
+  America/Argentina/Tucuman
+  America/Argentina/Ushuaia
+  America/Aruba
+  America/Asuncion
+  America/Atikokan
+  America/Atka
+  America/Bahia
+  America/Bahia_Banderas
+  America/Barbados
+  America/Belem
+  America/Belize
+  America/Blanc-Sablon
+  America/Boa_Vista
+  America/Bogota
+  America/Boise
+  America/Buenos_Aires
+  America/Cambridge_Bay
+  America/Campo_Grande
+  America/Cancun
+  America/Caracas
+  America/Catamarca
+  America/Cayenne
+  America/Cayman
+  America/Chicago
+  America/Chihuahua
+  America/Coral_Harbour
+  America/Cordoba
+  America/Costa_Rica
+  America/Creston
+  America/Cuiaba
+  America/Curacao
+  America/Danmarkshavn
+  America/Dawson
+  America/Dawson_Creek
+  America/Denver
+  America/Detroit
+  America/Dominica
+  America/Edmonton
+  America/Eirunepe
+  America/El_Salvador
+  America/Ensenada
+  America/Fort_Nelson
+  America/Fort_Wayne
+  America/Fortaleza
+  America/Glace_Bay
+  America/Godthab
+  America/Goose_Bay
+  America/Grand_Turk
+  America/Grenada
+  America/Guadeloupe
+  America/Guatemala
+  America/Guayaquil
+  America/Guyana
+  America/Halifax
+  America/Havana
+  America/Hermosillo
+  America/Indiana/Indianapolis
+  America/Indiana/Knox
+  America/Indiana/Marengo
+  America/Indiana/Petersburg
+  America/Indiana/Tell_City
+  America/Indiana/Vevay
+  America/Indiana/Vincennes
+  America/Indiana/Winamac
+  America/Indianapolis
+  America/Inuvik
+  America/Iqaluit
+  America/Jamaica
+  America/Jujuy
+  America/Juneau
+  America/Kentucky/Louisville
+  America/Kentucky/Monticello
+  America/Knox_IN
+  America/Kralendijk
+  America/La_Paz
+  America/Lima
+  America/Los_Angeles
+  America/Louisville
+  America/Lower_Princes
+  America/Maceio
+  America/Managua
+  America/Manaus
+  America/Marigot
+  America/Martinique
+  America/Matamoros
+  America/Mazatlan
+  America/Mendoza
+  America/Menominee
+  America/Merida
+  America/Metlakatla
+  America/Mexico_City
+  America/Miquelon
+  America/Moncton
+  America/Monterrey
+  America/Montevideo
+  America/Montreal
+  America/Montserrat
+  America/Nassau
+  America/New_York
+  America/Nipigon
+  America/Nome
+  America/Noronha
+  America/North_Dakota/Beulah
+  America/North_Dakota/Center
+  America/North_Dakota/New_Salem
+  America/Ojinaga
+  America/Panama
+  America/Pangnirtung
+  America/Paramaribo
+  America/Phoenix
+  America/Port-au-Prince
+  America/Port_of_Spain
+  America/Porto_Acre
+  America/Porto_Velho
+  America/Puerto_Rico
+  America/Punta_Arenas
+  America/Rainy_River
+  America/Rankin_Inlet
+  America/Recife
+  America/Regina
+  America/Resolute
+  America/Rio_Branco
+  America/Rosario
+  America/Santa_Isabel
+  America/Santarem
+  America/Santiago
+  America/Santo_Domingo
+  America/Sao_Paulo
+  America/Scoresbysund
+  America/Shiprock
+  America/Sitka
+  America/St_Barthelemy
+  America/St_Johns
+  America/St_Kitts
+  America/St_Lucia
+  America/St_Thomas
+  America/St_Vincent
+  America/Swift_Current
+  America/Tegucigalpa
+  America/Thule
+  America/Thunder_Bay
+  America/Tijuana
+  America/Toronto
+  America/Tortola
+  America/Vancouver
+  America/Virgin
+  America/Whitehorse
+  America/Winnipeg
+  America/Yakutat
+  America/Yellowknife
+  Antarctica/Casey
+  Antarctica/Davis
+  Antarctica/DumontDUrville
+  Antarctica/Macquarie
+  Antarctica/Mawson
+  Antarctica/McMurdo
+  Antarctica/Palmer
+  Antarctica/Rothera
+  Antarctica/South_Pole
+  Antarctica/Syowa
+  Antarctica/Troll
+  Antarctica/Vostok
+  Arctic/Longyearbyen
+  Asia/Aden
+  Asia/Almaty
+  Asia/Amman
+  Asia/Anadyr
+  Asia/Aqtau
+  Asia/Aqtobe
+  Asia/Ashgabat
+  Asia/Ashkhabad
+  Asia/Atyrau
+  Asia/Baghdad
+  Asia/Bahrain
+  Asia/Baku
+  Asia/Bangkok
+  Asia/Barnaul
+  Asia/Beirut
+  Asia/Bishkek
+  Asia/Brunei
+  Asia/Calcutta
+  Asia/Chita
+  Asia/Choibalsan
+  Asia/Chongqing
+  Asia/Chungking
+  Asia/Colombo
+  Asia/Dacca
+  Asia/Damascus
+  Asia/Dhaka
+  Asia/Dili
+  Asia/Dubai
+  Asia/Dushanbe
+  Asia/Famagusta
+  Asia/Gaza
+  Asia/Harbin
+  Asia/Hebron
+  Asia/Ho_Chi_Minh
+  Asia/Hong_Kong
+  Asia/Hovd
+  Asia/Irkutsk
+  Asia/Istanbul
+  Asia/Jakarta
+  Asia/Jayapura
+  Asia/Jerusalem
+  Asia/Kabul
+  Asia/Kamchatka
+  Asia/Karachi
+  Asia/Kashgar
+  Asia/Kathmandu
+  Asia/Katmandu
+  Asia/Khandyga
+  Asia/Kolkata
+  Asia/Krasnoyarsk
+  Asia/Kuala_Lumpur
+  Asia/Kuching
+  Asia/Kuwait
+  Asia/Macao
+  Asia/Macau
+  Asia/Magadan
+  Asia/Makassar
+  Asia/Manila
+  Asia/Muscat
+  Asia/Nicosia
+  Asia/Novokuznetsk
+  Asia/Novosibirsk
+  Asia/Omsk
+  Asia/Oral
+  Asia/Phnom_Penh
+  Asia/Pontianak
+  Asia/Pyongyang
+  Asia/Qatar
+  Asia/Qyzylorda
+  Asia/Rangoon
+  Asia/Riyadh
+  Asia/Saigon
+  Asia/Sakhalin
+  Asia/Samarkand
+  Asia/Seoul
+  Asia/Shanghai
+  Asia/Singapore
+  Asia/Srednekolymsk
+  Asia/Taipei
+  Asia/Tashkent
+  Asia/Tbilisi
+  Asia/Tehran
+  Asia/Tel_Aviv
+  Asia/Thimbu
+  Asia/Thimphu
+  Asia/Tokyo
+  Asia/Tomsk
+  Asia/Ujung_Pandang
+  Asia/Ulaanbaatar
+  Asia/Ulan_Bator
+  Asia/Urumqi
+  Asia/Ust-Nera
+  Asia/Vientiane
+  Asia/Vladivostok
+  Asia/Yakutsk
+  Asia/Yangon
+  Asia/Yekaterinburg
+  Asia/Yerevan
+  Atlantic/Azores
+  Atlantic/Bermuda
+  Atlantic/Canary
+  Atlantic/Cape_Verde
+  Atlantic/Faeroe
+  Atlantic/Faroe
+  Atlantic/Jan_Mayen
+  Atlantic/Madeira
+  Atlantic/Reykjavik
+  Atlantic/South_Georgia
+  Atlantic/St_Helena
+  Atlantic/Stanley
+  Australia/ACT
+  Australia/Adelaide
+  Australia/Brisbane
+  Australia/Broken_Hill
+  Australia/Canberra
+  Australia/Currie
+  Australia/Darwin
+  Australia/Eucla
+  Australia/Hobart
+  Australia/LHI
+  Australia/Lindeman
+  Australia/Lord_Howe
+  Australia/Melbourne
+  Australia/NSW
+  Australia/North
+  Australia/Perth
+  Australia/Queensland
+  Australia/South
+  Australia/Sydney
+  Australia/Tasmania
+  Australia/Victoria
+  Australia/West
+  Australia/Yancowinna
+  Brazil/Acre
+  Brazil/DeNoronha
+  Brazil/East
+  Brazil/West
+  CET
+  CST6CDT
+  Canada/Atlantic
+  Canada/Central
+  Canada/Eastern
+  Canada/Mountain
+  Canada/Newfoundland
+  Canada/Pacific
+  Canada/Saskatchewan
+  Canada/Yukon
+  Chile/Continental
+  Chile/EasterIsland
+  Cuba
+  EET
+  EST5EDT
+  Egypt
+  Eire
+  Etc/GMT
+  Etc/GMT+0
+  Etc/GMT+1
+  Etc/GMT+10
+  Etc/GMT+11
+  Etc/GMT+12
+  Etc/GMT+2
+  Etc/GMT+3
+  Etc/GMT+4
+  Etc/GMT+5
+  Etc/GMT+6
+  Etc/GMT+7
+  Etc/GMT+8
+  Etc/GMT+9
+  Etc/GMT-0
+  Etc/GMT-1
+  Etc/GMT-10
+  Etc/GMT-11
+  Etc/GMT-12
+  Etc/GMT-13
+  Etc/GMT-14
+  Etc/GMT-2
+  Etc/GMT-3
+  Etc/GMT-4
+  Etc/GMT-5
+  Etc/GMT-6
+  Etc/GMT-7
+  Etc/GMT-8
+  Etc/GMT-9
+  Etc/GMT0
+  Etc/Greenwich
+  Etc/UCT
+  Etc/UTC
+  Etc/Universal
+  Etc/Zulu
+  Europe/Amsterdam
+  Europe/Andorra
+  Europe/Astrakhan
+  Europe/Athens
+  Europe/Belfast
+  Europe/Belgrade
+  Europe/Berlin
+  Europe/Bratislava
+  Europe/Brussels
+  Europe/Bucharest
+  Europe/Budapest
+  Europe/Busingen
+  Europe/Chisinau
+  Europe/Copenhagen
+  Europe/Dublin
+  Europe/Gibraltar
+  Europe/Guernsey
+  Europe/Helsinki
+  Europe/Isle_of_Man
+  Europe/Istanbul
+  Europe/Jersey
+  Europe/Kaliningrad
+  Europe/Kiev
+  Europe/Kirov
+  Europe/Lisbon
+  Europe/Ljubljana
+  Europe/London
+  Europe/Luxembourg
+  Europe/Madrid
+  Europe/Malta
+  Europe/Mariehamn
+  Europe/Minsk
+  Europe/Monaco
+  Europe/Moscow
+  Europe/Nicosia
+  Europe/Oslo
+  Europe/Paris
+  Europe/Podgorica
+  Europe/Prague
+  Europe/Riga
+  Europe/Rome
+  Europe/Samara
+  Europe/San_Marino
+  Europe/Sarajevo
+  Europe/Saratov
+  Europe/Simferopol
+  Europe/Skopje
+  Europe/Sofia
+  Europe/Stockholm
+  Europe/Tallinn
+  Europe/Tirane
+  Europe/Tiraspol
+  Europe/Ulyanovsk
+  Europe/Uzhgorod
+  Europe/Vaduz
+  Europe/Vatican
+  Europe/Vienna
+  Europe/Vilnius
+  Europe/Volgograd
+  Europe/Warsaw
+  Europe/Zagreb
+  Europe/Zaporozhye
+  Europe/Zurich
+  GB
+  GB-Eire
+  GMT
+  GMT0
+  Greenwich
+  Hongkong
+  Iceland
+  Indian/Antananarivo
+  Indian/Chagos
+  Indian/Christmas
+  Indian/Cocos
+  Indian/Comoro
+  Indian/Kerguelen
+  Indian/Mahe
+  Indian/Maldives
+  Indian/Mauritius
+  Indian/Mayotte
+  Indian/Reunion
+  Iran
+  Israel
+  Jamaica
+  Japan
+  Kwajalein
+  Libya
+  MET
+  MST7MDT
+  Mexico/BajaNorte
+  Mexico/BajaSur
+  Mexico/General
+  NZ
+  NZ-CHAT
+  Navajo
+  PRC
+  PST8PDT
+  Pacific/Apia
+  Pacific/Auckland
+  Pacific/Bougainville
+  Pacific/Chatham
+  Pacific/Chuuk
+  Pacific/Easter
+  Pacific/Efate
+  Pacific/Enderbury
+  Pacific/Fakaofo
+  Pacific/Fiji
+  Pacific/Funafuti
+  Pacific/Galapagos
+  Pacific/Gambier
+  Pacific/Guadalcanal
+  Pacific/Guam
+  Pacific/Honolulu
+  Pacific/Johnston
+  Pacific/Kiritimati
+  Pacific/Kosrae
+  Pacific/Kwajalein
+  Pacific/Majuro
+  Pacific/Marquesas
+  Pacific/Midway
+  Pacific/Nauru
+  Pacific/Niue
+  Pacific/Norfolk
+  Pacific/Noumea
+  Pacific/Pago_Pago
+  Pacific/Palau
+  Pacific/Pitcairn
+  Pacific/Pohnpei
+  Pacific/Ponape
+  Pacific/Port_Moresby
+  Pacific/Rarotonga
+  Pacific/Saipan
+  Pacific/Samoa
+  Pacific/Tahiti
+  Pacific/Tarawa
+  Pacific/Tongatapu
+  Pacific/Truk
+  Pacific/Wake
+  Pacific/Wallis
+  Pacific/Yap
+  Poland
+  Portugal
+  ROK
+  Singapore
+  SystemV/AST4
+  SystemV/AST4ADT
+  SystemV/CST6
+  SystemV/CST6CDT
+  SystemV/EST5
+  SystemV/EST5EDT
+  SystemV/HST10
+  SystemV/MST7
+  SystemV/MST7MDT
+  SystemV/PST8
+  SystemV/PST8PDT
+  SystemV/YST9
+  SystemV/YST9YDT
+  Turkey
+  UCT
+  US/Alaska
+  US/Aleutian
+  US/Arizona
+  US/Central
+  US/East-Indiana
+  US/Eastern
+  US/Hawaii
+  US/Indiana-Starke
+  US/Michigan
+  US/Mountain
+  US/Pacific
+  US/Pacific-New
+  US/Samoa
+  UTC
+  Universal
+  W-SU
+  WET
+  Zulu
+  ```
+
+- 配置不同的时区
+
+  为不同的源表配置不同的时区
+
+  ```sql
+  CREATE TABLE mysql_source_table (
+  	-- ...
+  ) WITH (
+  	-- ...
+    timeZone='Europe/Bratislava'
+  )
+  ```
+
+- 字符串转时间类型
+
+```sql
+SELECT TO_TIMESTAMP('2022-08-24 10:55:55')
+-- 输出 `2022-08-24 10:55:55`
+
+SELECT TIMESTAMP '2022-08-24 10:55:55'
+-- 输出 `2022-08-24 10:55:55`
+
+SELECT UNIX_TIMESTAMP('2022-08-24 10:55:55')
+-- 输出 `1661309755`
+```
+
+- 时间类型转字符串
+
+```sql
+SELECT FROM_UNIXTIME(1661309755000/1000) 
+-- 输出： `2022-08-24 10:55:55`
+```
+
+- 当前时间函数
+
+```sql
+SELECT LOCALTIMESTAMP;
+-- 输出： `2022-08-25 14:00:48.095`
+SELECT CURRENT_TIMESTAMP;
+-- 输出： `2022-08-25 14:00:48.095`
+SELECT NOW();
+-- 输出： `2022-08-25 14:02:11.175`
+SELECT UNIX_TIMESTAMP();
+-- 输出： `1661407348`
+```
+
+### 时间属性
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
