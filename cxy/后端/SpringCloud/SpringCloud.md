@@ -190,5 +190,317 @@ Spring Cloud专注于提供良好的开箱即用经验的典型用例和可扩�
 
 # 新建一个Spring Cloud 项目
 
+### 建立服务注册发现中心
+
+**建一个空的Maven项目（删除src目录）**
+
+> pom文件如下
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.lacp</groupId>
+  <artifactId>lacpCloud</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+</project>
+```
+
+**建立SpringBoot项目，pom文件如下**
+
+> 注意：**SpringCloud的版本要和Springboot版本有对应关系**，具体可查看官网
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.7.0</version>
+    <relativePath/> <!-- lookup parent from repository -->
+  </parent>
+
+  <groupId>com.lacp</groupId>
+  <artifactId>cloudApi</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>cloudApi</name>
+  <description>lacpCloud server</description>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <spring-cloud.version>2021.0.3</spring-cloud.version>
+  </properties>
+
+  <dependencies>
+    <!-- web -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <!-- eureka -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- spring-cloud-dependencies -->
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
+```
+
+**yaml配置文件**
+
+```yaml
+# 服务中心的端口
+server:
+    port: 25600
+
+eureka:
+    client:
+    		#是否需要将自己注册到注册中心，因为该工程自己就是服务注册中心，所以无需注册。如果是多个服务注册中心集群模式，则另当别论
+        registerWithEureka: false
+        #是否向注册中心定时更新自己状态
+        fetchRegistry: false
+```
+
+**启动类添加注解`@EnableEurekaServer`**
+
+```java
+@SpringBootApplication
+@EnableEurekaServer
+public class CloudApiApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(CloudApiApplication.class, args);
+    }
+}
+```
+
+**启动后则可以访问到管理中心**
+
+![image-20220830163557917](SpringCloud.assets/image-20220830163557917.png)
+
+### 服务方配置
+
+> **首先pom文件版本要统一**，以下是pom依赖
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  </dependency>
+</dependencies>
+
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-dependencies</artifactId>
+      <version>${spring-cloud.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+```
+
+**配置文件`yaml`**
+
+```yaml
+server:
+    port: 25601
+
+spring:
+    application:
+    		# 配置自己的服务名，和pom文件中对应
+        name: lacpTestService
+
+eureka:
+    client:
+    		#是否需要将自己注册到注册中心
+        registerWithEureka: true
+        #是否向注册中心定时更新自己状态
+        fetchRegistry: true
+        #注册中心地址
+        serviceUrl:
+            defaultZone: http://eureka:eureka@124.222.34.234:25600/eureka
+```
+
+**添加启动类注解`@EnableEurekaClient`**
+
+```java
+@SpringBootApplication
+@EnableEurekaClient
+public class LacpTestServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(LacpTestServiceApplication.class, args);
+    }
+}
+```
+
+### 调用方配置
+
+> pom文件版本统一，以下是依赖
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+  </dependency>
+</dependencies>
+
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-dependencies</artifactId>
+      <version>${spring-cloud.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+```
+
+**配置文件`yaml`**
+
+和服务方基本相同
+
+```yaml
+server:
+    port: 25602
+
+spring:
+    application:
+    		# 配置自己的服务名，和pom文件中对应
+        name: lacpTestConsumer
+
+eureka:
+    client:
+    		#是否需要将自己注册到注册中心
+        registerWithEureka: true
+        #是否向注册中心定时更新自己状态
+        fetchRegistry: true
+        #注册中心地址
+        serviceUrl:
+            defaultZone: http://eureka:eureka@124.222.34.234:25600/eureka
+```
+
+**配置启动类注解`@EnableEurekaClient`和`@EnableFeignClients`**
+
+```java
+@SpringBootApplication
+@EnableEurekaClient
+@EnableFeignClients
+public class LacpTestConsumerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(LacpTestConsumerApplication.class, args);
+    }
+}
+```
+
+**调用服务方接口**
+
+- 编写调用接口
+
+> `value`中的值为要调用的服务名
+>
+> `fallback`为失败调用的方法类对象
+>
+> **注意点：@RequestParam 必写**
+
+```java
+@FeignClient(value = "lacpTestService", fallback = FallBackExample.class)
+public interface UserService {
+    @GetMapping("/server1/user")
+    String getUser(@RequestParam("name") String name);
+}
+```
+
+- 失败的方法调用
+
+```java
+@Component
+public class FallBackExample implements UserService {
+
+    @Override
+    public String getUser(@RequestParam("name") String name) {
+        return "服务不可用 error -> param:" + name;
+    }
+}
+```
+
+- 调用方法
+
+```java
+@RestController
+@RequestMapping("test")
+@RequiredArgsConstructor
+public class TestController {
+
+    private final UserService userService;
+
+    @GetMapping("service1")
+    public String test1(String name){
+        return userService.getUser(name);
+    }
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
