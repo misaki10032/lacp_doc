@@ -488,9 +488,53 @@ public class TestController {
 }
 ```
 
+> 如果调用方和服务方不在同一台服务器上，注册中心读取到的ip为局域网ip则无法找到实例，此时有两种解决方法
+>
+> 1. 配置instance-ip
+> 2. 指定访问url
 
+- 注册服务时,统一都使用服务器ip来注册
 
+```properties
+# 服务名，默认取 spring.application.name 配置值，如果没有则为 unknown
+eureka.instance.appname = eureka-client
 
+# 实例ID
+eureka.instance.instance-id = eureka-client-instance1
+
+# 应用实例主机名
+eureka.instance.hostname = localhost
+
+# 客户端在注册时使用自己的IP而不是主机名，缺省：false
+eureka.instance.prefer-ip-address = false
+
+# 应用实例IP
+eureka.instance.ip-address = 127.0.0.1
+
+# 服务失效时间，失效的服务将被剔除。单位：秒，默认：90
+eureka.instance.lease-expiration-duration-in-seconds = 90
+
+# 服务续约（心跳）频率，单位：秒，缺省30
+eureka.instance.lease-renewal-interval-in-seconds = 30
+
+# 状态页面的URL，相对路径，默认使用 HTTP 访问，如需使用 HTTPS则要使用绝对路径配置，缺省：/info
+eureka.instance.status-page-url-path = /info
+
+# 健康检查页面的URL，相对路径，默认使用 HTTP 访问，如需使用 HTTPS则要使用绝对路径配置，缺省：/health
+eureka.instance.health-check-url-path = /health
+```
+
+- feign指定访问的url
+
+```java
+@FeignClient(value = "DATABASEMANAGEMENT", url = "http://124.222.34.234:27314")
+public interface DbmaService {
+  
+    @GetMapping("/api/news/list/top/{num}")
+    String getNewsTop(@PathVariable @RequestParam("num") String num);
+  
+}
+```
 
 
 
