@@ -4,7 +4,7 @@
 
 【2022-08-30】[学习SpringCloud集成Eureka和Feign实现远程服务调用](cxy/后端/SpringCloud/SpringCloud?id=建立服务注册发现中心)
 
-【2022-08-17】[更新消息模块发送为：flink读取binlog变化，自动发消息](学习交流平台/学习交流平台?id=流程图)
+【2022-08-17】[更新消息模块](学习交流平台/学习交流平台?id=流程图)
 
 【2022-08-16】[继续学习clickhouse](cxy/大数据/clickhouse?id=客户端)
 
