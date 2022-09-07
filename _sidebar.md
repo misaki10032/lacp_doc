@@ -1,7 +1,9 @@
 <!-- _navbar.md -->
+
 * 我的博客
   * 日常记录
     - [记录](cxy/日常记录/杂谈.md)
+    - [问题记录](学习记录/问题记录.md)
     - [学习交流平台](学习交流平台/学习交流平台.md)
     - [NoneBot配合go-cqhttp搭建QQ机器人](学习记录/NoneBot的搭建与使用.md)
   * 大数据
@@ -22,10 +24,10 @@
       - [Redis学习笔记-进阶](cxy/后端/Redis/Redis进阶.md)
       - [Redis学习笔记-事务](cxy/后端/Redis/redis事务.md)
     - Spring
-      - [Spring-IOC](cxy/后端/Spring/SpringIOC.md)  
+      - [Spring-IOC](cxy/后端/Spring/SpringIOC.md)
       - [Spring-APO](cxy/后端/Spring/SpringAOP.md)
       - [SpringCloud](cxy/后端/SpringCloud/SpringCloud.md)
-    - shiro 
+    - shiro
       - [Shiro](cxy/后端/SpringBoot/shiro.md)
       - [thymeleaf关联shiro](cxy/后端/SpringBoot/thymeleaf-extras-shiro.md)
   * 设计模式
