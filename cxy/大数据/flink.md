@@ -1868,17 +1868,95 @@ SELECT UNIX_TIMESTAMP();
 
 ### 时间属性
 
+# Flink sql流计算平台的运行原理
 
+> 大多数流计算平台都支持，直接编写sql，当sql语句校验通过后，可以提交到集群上运行。那么这其中平台到底怎么做的？
 
+1. Flink Sql解析器
+2. Flink Planner 和 Blink Planner
+3. Blink Sql提交流程
 
+## 执行过程
 
+### Flink Sql解析器
 
+#### Calcite
 
+![image-20220907142047863](flink.assets/image-20220907142047863.png)
 
+为了用户更方便的使用`flink`流计算组件，社区设计了4中抽象，`Sql API	`属于Flink最上层的抽象，是Flink的一等公民，可以直接提交Sql来执行任务。
 
+**`Flink Sql`在提交任务时，不是和`DataStream API`一样**
 
+- **`DataStream API`会直接被转换为`StreamGraph`,经过优化后生成`JobGraph`提交到集群**
 
+- **`Flink Sql`是对`Sql`语句直接进行解析、验证、优化等操作，在这些操作中，社区引入了一个强大的解析器`Calcite`**
 
+> Calcite
+
+属于Apache旗下的一个动态数据管理框架，具备很多数据库管理系统的功能，他可以对`SQL`进行<font color='#900055'>SQL解析、SQL校验、SQL查询优化、SQL生成</font>以及数据连接等炒作，他不存储元数据和基本数据，不包含处理数据的算法。而是作为一个中介角色，<font color='#900055'>将上层SQL和底层处理引擎打通</font>,将其`SQL`转化为底层处理引擎需要的数据格式。
+
+它不受上层编程用语言的限制，前端可以使用SQL，Pig，Cascading等语言，只要通过Calcite提供的`SQL Api`，<font color='#900055'>将他们转换为关系代数的抽象语法树</font>，并根据一定的规则和成本对抽象语法树进行优化，最后推给各个数据处理引擎来执行。
+
+Calcite不涉及物理规划层，他通过扩展适配器来链接多种后端的数据源和数据处理引擎，比如<font color='#900055'>Hive, Drill, Flink, Phoenix等</font>
+
+##### Calcite执行步骤
+
+主要设计5个部分<font color='#900055'>SQL解析、SQL校验、SQL查询优化、SQL生成、执行</font>
+
+![image-20220907143631032](flink.assets/image-20220907143631032.png)
+
+1. **SQL解析**：通过`JavaCC`实现，使用JavaCC编写SQL语法描述文件，将SQL解析成未经校验的`AST语法树。`
+2. **SQL校验**：通过与元数据结合`验证SQL中的Schema、Field、Function是否存在`，输入输出类型是否匹配等
+3. **SQL优化**：`对上个步骤进行输出（RelNode，逻辑计划树）进行优化`，使用<font color='#900055'>基于规则优化和基于代价优化</font>两种规则，得到优化后的物理执行计划。
+4. **SQL生成**：`将物理执行计划生成为在特定平台|引擎可以执行的程序`，如生成符合MYSQL或Oracle等，不同平台规则的SQL查询语句。
+5. **执行**：通过执行平台执行查询，得到结果
+
+当Calcite与其他处理引擎结合时，到`SQL优化`阶段就已经结束，流程简化为如下：
+
+![image-20220907144307645](flink.assets/image-20220907144307645.png)
+
+### Flink Planner和Blink Planner
+
+>在1.9.0版本以前，社区使用`Flink Planner`作为查询处理器，通过与`Calcite`进行连接，为`Table/SQL API`提供完整的解析、优化和执行环境，使其SQL被转为`DataStream API`的 `Transformation`，然后再经过`StreamJraph -> JobGraph -> ExecutionGraph`等一系列流程，最终被提交到集群。
+
+在1.9.0版本，社区引入阿里巴巴的`Blink`，对`FIink TabIe & SQL`模块做了重大的重构，保留了 `Flink Planner`的同时，引入了 `Blink PIanner`，没引入以前，`Flink`没考虑流批作业统一，针对流批作业，底层实现两套代码，引入后，基于流批一体理念，重新设计算子，以流为核心，流作业和批作业最终都会被转为`transformation`。
+
+#### Blink Planner和Calcite的关系
+
+对接流程如下
+
+1. Table/SQL编写完成后，<font color='#900055'>通过Calcite中的parse、validate、rel阶段，以及Blink额外添加的convert阶段，将其转为Operation</font>
+2. 通过Blink Planner的`translateToRel`、`optimize`、`translateToExecNodeGraph`、`translateToPlan`四个阶段，<font color='#900055'>将Operation转化成DataStream API的Transformation</font>
+
+3. 再经过StreamJraph -> JobGraph -> ExecutionGraph等一系列流程，SQL最终被提交到集群。
+
+![image-20220907145512313](flink.assets/image-20220907145512313.png)
+
+### Blink Sql执行流程
+
+1. SQL语句到Operation过程，即Parse阶段；
+2. Operation到Transformations过程，即Translate阶段
+
+#### Parse阶段
+
+在Parse阶段一共包含parse、validate、rel、convert部分
+
+![image-20220907151633489](flink.assets/image-20220907151633489.png)
+
+`Calcite的parse解析模块是基于javacc实现的`。javacc是一个<font color='#900055'>词法分析生成器和语法分析生成器</font>。词法分析器用于将输入字符流解析成一个一个的token，以下面这段SQL为例：
+
+```sql
+select id,CAST(score AS INT), 'hello' from T WHERE id < 10
+```
+
+在Pase阶段，上述SQL语句最后会被解析成如下的一组token：
+
+```sql
+select` `` `id` `,` `` `CAST``(` `score` `` `AS`` ` `INT` `)``,` `` `'``hello` `'` `` `from`` ` `T` `` `WHERE`` ` `id` `` `<`` ` `10
+```
+
+接下来**语法分析器**会以**词法分析器**解析出来的token序列作为输入来进行语法分析。分析过程使用**递归下降语法**解析，LL(k)。
 
 
 
