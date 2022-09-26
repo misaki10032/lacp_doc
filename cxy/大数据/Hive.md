@@ -1,5 +1,341 @@
 [toc]
 
+# Docker 搭建hadoop+hive环境
+
+> 转自：[知乎](https://zhuanlan.zhihu.com/p/242658224)
+
+本地搭建环境配置如下
+
+```text
+- docker 20.10.17
+- JDK 1.8
+- Hadoop 3.2.0
+- Hive 3.1.2
+- mysql 8.0.29
+- mysql-connector-java-8.0.29.jar
+```
+
+### Hadoop部分
+
+1. 拉取镜像
+
+```bash
+docker pull registry.cn-hangzhou.aliyuncs.com/hadoop_test/hadoop_base
+```
+
+2. 运行容器
+
+- 查看容器配置情况和worker情况
+
+```bash
+# 随便启动一个容器查看配置情况
+docker run -it \
+--name hadoop-test registry.cn-hangzhou.aliyuncs.com/hadoop_test/hadoop_base
+# 查看系统变量
+vim /etc/profile
+# 查看worker情况
+vim /usr/local/hadoop/etc/hadoop/worker
+```
+
+- 建立hadoop用得内部网络
+
+```bash
+#指定固定ip号段
+docker network create --driver=bridge --subnet=172.19.0.0/16  hadoop
+```
+
+- 分别创建Master、Slave1、Slave2容器
+
+```bash
+# 启动Master容器
+docker run -it \
+--network hadoop \
+-h Master \
+--name Master \
+-p 9870:9870 \
+-p 8088:8088 \
+-p 10000:10000 \
+registry.cn-hangzhou.aliyuncs.com/hadoop_test/hadoop_base \
+bash
+# Slave1
+docker run -it \
+--network hadoop \
+-h Slave1 \
+--name Slave1 \
+registry.cn-hangzhou.aliyuncs.com/hadoop_test/hadoop_base \
+bash
+# Slave2
+docker run -it \
+--network hadoop \
+-h Slave2 \
+--name Slave2 \
+registry.cn-hangzhou.aliyuncs.com/hadoop_test/hadoop_base \
+bash
+```
+
+![image-20220926165955179](Hive.assets/image-20220926165955179.png)
+
+**分别修改三台机器的hosts**
+
+```bash
+# 修改
+vim /etc/hosts
+# 修改成如下
+172.20.0.4 	Master
+172.20.0.3	Slave1
+172.20.0.2	Slave2
+```
+
+3. 启动hadoop
+
+- 刷新环境变量, 并格式化namenode
+
+```bash
+docker exec -it Master bash
+root@Master:/# souce /etc/profile
+root@Master:/# hadoop namenode -format
+```
+
+- 启动全部
+
+```bash
+root@Master:/# ./start-all.sh
+```
+
+> 通过jps查看或者http访问8088和9870
+
+![image-20220926170538886](Hive.assets/image-20220926170538886.png)
+
+![image-20220926170555034](Hive.assets/image-20220926170555034.png)
+
+
+
+- 建议运行wordcount来查看一下是否正常
+
+```bash
+root@Master:/usr/local/hadoop# hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.2.1.jar wordcount /input /output
+```
+
+- hadoop部分完成
+
+
+
+### Hive部分
+
+Hive下载后上传至容器目录下
+
+下载地址：[新地址链接](https://dlcdn.apache.org/hive/hive-3.1.2/)
+
+1. 解压安装包
+
+```bash
+# 拷贝安装包到Master容器
+docker cp apache-hive-3.1.2-bin.tar.gz Master:/usr/local
+# 进入容器
+docker exec -it Master bash
+cd /usr/local/
+# 解压
+tar xvf apache-hive-3.1.2-bin.tar.gz
+```
+
+2. 修改配置文件
+
+```bash
+root@Master:/usr/local/apache-hive-3.1.2-bin/conf# cp hive-default.xml.template hive-site.xml
+root@Master:/usr/local/apache-hive-3.1.2-bin/conf# vim hive-site.xml
+```
+
+**在最前面添加如下配置**
+
+```xml
+  <property>
+    <name>system:java.io.tmpdir</name>
+    <value>/tmp/hive/java</value>
+  </property>
+  <property>
+    <name>system:user.name</name>
+    <value>${user.name}</value>
+  </property>
+```
+
+3. 配置Hive相关环境变量
+
+```bash
+vim /etc/profile
+
+# 末尾添加
+export HIVE_HOME=/usr/local/apache-hive-3.1.2-bin
+export PATH=$PATH:$HIVE_HOME/bin
+
+# 保存后刷新
+source /etc/profile
+```
+
+4. 配置mysql作为源数据库
+
+- 安装mysql
+
+……略
+
+- 更改hive的配置
+
+```bash
+vim /usr/local/apache-hive-3.1.2-bin/conf/hive-site.xml
+```
+
+Hive-site.xml
+
+```xml
+  #还请注意hive配置文件里面使用&amp;作为分隔，高版本myssql需要SSL验证，在这里设置关闭
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>root</value>
+</property>
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>******</value>
+</property>
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:mysql://125.124.239.163:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false</value>
+</property>
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>com.mysql.cj.jdbc.Driver</value>
+</property>
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>false</value>
+<property>
+```
+
+- 上传mysql驱动到hive的lib下
+
+```bash
+root@Master:/usr/local# cp mysql-connector-java-8.0.29.jar /usr/local/apache-hive-3.1.2-bin/lib
+```
+
+4. jar包修改
+
+```bash
+#slf4j这个包hadoop及hive两边只能有一个，这里删掉hive这边
+root@Master:/usr/local/apache-hive-3.1.2-bin/lib# rm log4j-slf4j-impl-2.10.0.jar
+
+#guava这个包hadoop及hive两边只删掉版本低的那个，把版本高的复制过去，这里删掉hive，复制hadoop的过去
+root@Master:/usr/local/hadoop/share/hadoop/common/lib# cp guava-27.0-jre.jar /usr/local/apache-hive-3.1.2-bin/lib
+root@Master:/usr/local/hadoop/share/hadoop/common/lib# rm /usr/local/apache-hive-3.1.2-bin/lib/guava-19.0.jar
+
+#把文件hive-site.xml第3225行的特殊字符删除
+root@Master: vim /usr/local/apache-hive-3.1.2-bin/conf/hive-site.xml
+```
+
+5. 初始化源数据库
+
+```bash
+root@Master:/usr/local/# cd /usr/local/apache-hive-3.1.2-bin/bin
+root@Master:/usr/local/apache-hive-3.1.2-bin/bin# schematool -initSchema -dbType mysql
+```
+
+**成功后提示**
+
+```bash
+Metastore connection URL:        jdbc:mysql://125.124.239.163:3306/hive?createDatabaseIfNotExist=true&useSSL=false
+Metastore Connection Driver :    com.mysql.cj.jdbc.Driver
+Metastore connection User:       root
+Starting metastore schema initialization to 3.1.0
+Initialization script hive-schema-3.1.0.mysql.sql
+Initialization script completed
+schemaTool completed
+```
+
+6. 创建一张表进行测试
+
+- 从别的表导出一些数据
+
+![image-20220926174120056](Hive.assets/image-20220926174120056.png)
+
+用,分割
+
+- 进入hive交互界面
+
+```bash
+root@Master:/usr/local# hive
+hive> create table test(
+    > id int 
+    >  good_name string,
+    >  shop_name string,
+    >  good_price string,
+    >  good_region string,
+    >  payment_num string,
+    >  spider_keyword string,
+    >  spider_sourc string,
+    >  create_time string,
+    >  update_time string
+    >)
+    > row format delimited
+    > fields terminated by ',';
+ OK
+ Time taken: 9.453 seconds
+ 
+hive> load data local inpath '/usr/local/test.txt' into table test;
+Loading data to table default.test
+OK
+Time taken: 5.63 seconds
+
+hive> select * from test;
+```
+
+- HIVE 安装完成
+
+
+
+### 启动Hiveserver2
+
+1. 修改hadoop的一些权限配置
+
+```bash
+root@Master:/usr/local# vim /usr/local/hadoop/etc/hadoop/core-site.xml
+```
+
+- 加入配置
+
+```xml
+<property>
+    <name>hadoop.proxyuser.root.hosts</name>
+    <value>*</value>
+</property>
+<property>
+    <name>hadoop.proxyuser.root.groups</name>
+    <value>*</value>
+</property>
+```
+
+- 重启hdfs：
+
+```bash
+root@Master:/usr/local/hadoop/sbin# ./stop-dfs.sh
+Stopping namenodes on [Master]
+Stopping datanodes
+Stopping secondary namenodes [Master]
+root@Master:/usr/local/hadoop/sbin# ./start-dfs.sh
+Starting namenodes on [Master]
+Starting datanodes
+Starting secondary namenodes [Master]
+```
+
+2. 后台启动hiveserver2
+
+```bash
+root@Master:/usr/local/hadoop/sbin#  nohup hiveserver2 >/dev/null 2>/dev/null &
+[2] 7713
+```
+
+- 用DBeaver链接
+
+![image-20220926174911622](Hive.assets/image-20220926174911622.png)
+
+
+
 # mac m1  安装hive
 
 -   方式1`Homebrew`

@@ -2,6 +2,8 @@
 
 **【更新记录】**
 
+【2022-09-26】[docker安装Hadoop+Hive 学习测试](cxy/大数据/hive.md)
+
 【2022-09-07】[学习flink的cdc，解决问题](学习记录/问题记录.md)
 
 【2022-08-30】[学习SpringCloud集成Eureka和Feign实现远程服务调用](cxy/后端/SpringCloud/SpringCloud?id=建立服务注册发现中心)

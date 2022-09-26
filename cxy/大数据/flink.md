@@ -1960,13 +1960,41 @@ select` `` `id` `,` `` `CAST``(` `score` `` `AS`` ` `INT` `)``,` `` `'``hello` `
 
 
 
+# Flink StateFunction
 
+## 扩展概念
 
+### Actor模型
 
+Actor模型是一个概念模型，用于处理并发计算。Actor一大重要特征在于actors之间相互隔离，他们并不相互共享内存。也就是说，一个actor能维持一个私有状态，状态不能被另一个actor改变
 
+**模型Model**
 
+Actor模型是一个概念模型，用于处理并发计算。它定义了一系列系统组件应该如何动作和交互的通用规则，最著名的使用这套规则的编程语言是Erlang。
 
+**Actors**
 
+一个Actor指的是一个最基本的计算单元。他能接受一个消息并且基于其进行计算。
+
+> 很像面向对象语言：接收一条消息（`方法调用`）,然后根据接受的消息做事情（`调用了哪个方法`）。
+>
+> Actors一大重要特征在于actors之间相互隔离，他们并不互相共享内存。这点区别于上述的对象。也就是说一个actor能维持一个私有状态，并且这个状态不可能被另一个actor所改变。
+
+**一个actor是不够用的，多个actors才能组成系统，在actor模型中，每个actor都有地址，所以才能相互发送消息**
+
+在这个系统中，每一个actor只能顺序的处理消息，所以想要并行处理多条消息就应该把这条消息发给多个actors
+
+![Actors通过异步消息沟通，在处理消息之前消息被存放在MailBox中](flink.assets/:Users:chenxinyu:笔记:lacp_doc:cxy:大数据:flink.assets:image-20220919144535592-3569946.png)
+
+### Actors做什么
+
+当一个actor接收到消息后，他可以
+
+- Create more actors   ——创建其他actors
+- Send messages to other actors  ——向其他actor发送消息
+- Designates what to do with the next message  ——指定下一条消息的到来行为
+
+一个actor能维持一个私有状态。「指定下一条消息来到做什么」意味着可以定义下一条消息来到时候的状态。也就是可以修改状态
 
 
 
