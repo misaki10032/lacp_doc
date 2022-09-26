@@ -2,7 +2,7 @@
 
 **【更新记录】**
 
-【2022-09-26】[docker安装Hadoop+Hive 学习测试](cxy/大数据/hive.md)
+【2022-09-26】[docker安装Hadoop+Hive 学习测试](cxy/大数据/Hive.md)
 
 【2022-09-07】[学习flink的cdc，解决问题](学习记录/问题记录.md)
 
