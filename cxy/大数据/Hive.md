@@ -710,3 +710,59 @@ insert into table tablename1 select a, b, c from tablename2;
 ```hive
 insert overwrite table tablename1 select a, b, c from tablename2;
 ```
+
+
+
+
+
+## 对分区表的操作
+
+- 创建分区表的语法
+
+```hive
+create table score(s_id string, s_score int) partitioned by (month string);
+```
+
+- 创建一个表带多个分区
+
+```hive
+create table score2 (s_id string, s_score int) partitioned by (year string,month string,day string);
+```
+
+- 加载数据到一个分区的表中
+
+```hive
+load data local inpath '/export/servers/hivedatas/score.csv' into table score partition (month='201806');
+```
+
+- 加载数据到一个多分区的表中去
+
+```hive
+load data local inpath '/export/servers/hivedatas/score.csv' into table score2 partition(year='2018',month='06',day='01');
+```
+
+- 查看分区
+
+```hive
+show  partitions  score;
+```
+
+- 添加一个分区
+
+```hive
+alter table score add partition(month='201805');
+```
+
+- 同时添加多个分区
+
+```hive
+ alter table score add partition(month='201804') partition(month = '201803');
+```
+
+> 注意：添加分区之后就可以在 hdfs 文件系统当中看到表下面多了一个文件夹
+
+- 删除分区
+
+```hive
+ alter table score drop partition(month = '201806');
+```
