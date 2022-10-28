@@ -15,7 +15,7 @@
     - [Spark学习笔记](cxy/大数据/spark.md)
     - [Sqoop学习笔记](cxy/大数据/Sqoop学习.md)
     - [Storm学习笔记](cxy/大数据/storm.md)
-    - [Apache doris](cxy/大数据/Apache doris.md)
+    - [Apache doris](cxy/大数据/doris.md)
     - [数仓理论学习](cxy/大数据/数仓学习.md)
   * 后端
     - [Elastic学习笔记](cxy/后端/ES学习.md)
