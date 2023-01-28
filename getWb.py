@@ -57,7 +57,7 @@ if __name__ == '__main__':
         if news_count > 0 and news_count < 6 :
             news_text += news.get_news() + "\n"
         news_count += 1
-    with open("./spider/wbtext.md", "r+") as f:
+    with open("./wbtext.md", "r+") as f:
         old = f.read()
         f.seek(0)
         f.write("### 微博热搜记录更新 -5条\n")
