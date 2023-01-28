@@ -31,6 +31,11 @@ jobs:
       - name: add a text to tbpc.md
         run: 
           bash ./addTextToFile.sh
+          
+      # Runs a python add wbText to markdown file
+      - name: add five weibo text to wbtext.md
+        run: 
+          python ./getWb.py
 
       # commit update file
       - name: commit
