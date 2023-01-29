@@ -2,7 +2,7 @@
 
 **【更新记录】**
 
-【2023-01-29】[MacOS更新系统到13后，IDEA闪退问题和git无法使用为解决](cxy/日常记录/杂谈.md?id=MAC OS更新系统后出现IDEA崩溃无法打开，git无法使用的问题)
+【2023-01-29】[MacOS更新系统到13后，IDEA闪退问题和git无法使用为解决](cxy/日常记录/杂谈.md?id=macos更新系统后出现IDEA崩溃无法打开git无法使用)
 
 【2022-11-21】[Java 读取Excel文件转化为Json字符串工具类](cxy/日常记录/杂谈.md?id=读取excel文件转化成json格式字符串)
 
