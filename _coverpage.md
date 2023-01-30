@@ -2,7 +2,7 @@
 
 ![hello](https://img1.baidu.com/it/u=1306375176,2490405343&fm=253&fmt=auto?w=200&h=200)
 
-# Misaki的个人博客 `<small>`1.0`</small>`
+# Misaki的个人博客 <small>1.0</small>
 
 > Misaki的个人博客
 
