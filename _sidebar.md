@@ -19,6 +19,7 @@
     - [数仓理论学习](cxy/大数据/数仓学习.md)
   * 后端
     - [Elastic学习笔记](cxy/后端/ES学习.md)
+    - [工具类](cxy/后端/工具方法.md)
     - [Kafka学习笔记](cxy/后端/MQ-Kafka.md)
     - Redis
       - [Redis学习笔记-基础](cxy/后端/Redis/redis.md)
