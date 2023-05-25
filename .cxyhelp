@@ -1,0 +1,117 @@
+** [conda|原生命令] ************************************************************************************
+*  ├─ conda list                              * 列出当前环境中已安装的包
+*  ├─ conda create --name ${name} python=3.8  * 创建带有特定Python版本的环境
+*  ├─ conda env list                          * 列出所有存在的环境
+*  ├─ conda activate ${name}                  * 激活名为myenv的环境
+*  ├─ conda deactivate                        * 退出当前激活的环境
+*  ├─ conda env remove --name ${name}         * 删除名为myenv的环境
+*  ├─ conda install ${packageName}            * 安装名为packageName的包
+*  ├─ conda install ${packageName}=1.0        * 安装名为packageName的包并指定版本
+*  ├─ conda env remove --name ${name}         * 删除名为myenv的环境
+*  └─ conda update ${packageName}             * 更新某个包
+** [conda|自定义命令]
+*  ├─ c_list                                  * 查看conda python虚拟环境列表
+*  └─ c_use ${name}                           * 选择conda某个虚拟环境切换
+*  └─ c_unuse ${name}                         * 取消选择conda某个虚拟环境切换
+*  [lolcat]
+*  ├─ lolcat                                  * 任意命令的输出改为lolcat
+*  └─ lcat                                    * cat改为lolcat
+*
+** [maven] *******************************************************************************************
+*  ├─ mvn clean                                              * maven 清理项目，删除生成的目录和文件
+*  ├─ mvn compile                                            * maven 编译项目源代码
+*  ├─ mvn package                                            * maven 将编译后的代码打包成可分发的格式（例如JAR）
+*  ├─ mvn install                                            * maven 安装构建的包到本地仓库，供其他项目使用
+*  ├─ mvn exec:java -Dexec.mainClass="com.example.MainClass" * maven 运行Java应用程序
+*  ├─ mvn dependency:resolve                                 * maven 解析并下载项目的依赖
+*  ├─ mvn dependency:tree                                    * maven 显示项目依赖的树形结构
+*  ├─ mvn test                                               * maven 运行项目的单元测试
+*  ├─ mvn dependency:purge-local-repository                  * maven 清除本地仓库中的依赖缓存
+*  └─ mvn archetype:generate                                 * maven 创建新项目的骨架结构
+*
+** [nvm]   *******************************************************************************************
+*  ├─ nvm install <version>         * 安装指定的Node.js版本，例如：nvm install 14.17.0
+*  ├─ nvm use <version>             * 切换到指定的Node.js版本，例如：nvm use 12.22.1
+*  ├─ nvm ls                        * 列出所有已安装的Node.js版本
+*  ├─ nvm ls-remote                 * 列出所有可用的Node.js版本
+*  ├─ nvm alias default <version>   * 设置默认的Node.js版本，例如：nvm alias default 14.17.0
+*  ├─ nvm uninstall <version>       * 卸载指定的Node.js版本，例如：nvm uninstall 12.22.1
+*  └─ nvm current                   * 显示当前使用的Node.js版本
+*
+** [node]  *******************************************************************************************
+*  ├─ node app.js                   * node 运行名为app.js的JavaScript文件
+*  ├─ node                          * node 进入Node.js的交互式模式（REPL）
+*  ├─ npm install packageName       * node 安装名为packageName的包
+*  ├─ npm run scriptName            * node 执行在package.json文件中定义的名为scriptName的脚本
+*  ├─ npm ls                        * node 列出当前目录下已安装的包
+*  ├─ npm view packageName          * node 显示名为packageName的包的详细信息
+*  ├─ npm update packageName        * node 更新名为packageName的包到最新版本
+*  ├─ npm uninstall packageName     * node 卸载名为packageName的包
+*  └─ npm init                      * node 初始化新的npm项目，创建package.json文件
+*
+** [hadoop] ******************************************************************************************
+*  ├─ hadoop fs -ls <path>                     * hadoop 列出路径下的文件和目录
+*  ├─ hadoop fs -mkdir <path>                  * hadoop 创建一个新目录
+*  ├─ hadoop fs -put <local*path> <hdfs*path>  * hadoop 将本地文件上传到HDFS
+*  ├─ hadoop fs -get <hdfs*path> <local*path>  * hadoop 从HDFS下载文件到本地
+*  ├─ hadoop fs -rm <path>                     * hadoop 删除路径下的文件或目录
+*  └─ hadoop fs -mv <src> <dest>               * hadoop 移动文件或目录
+** [hadoop|HDFS]
+*  ├─ hdfs dfsadmin -report                    * hadoop 显示HDFS集群的报告信息
+*  ├─ hdfs dfs -du <path>                      * hadoop 显示路径占用的磁盘空间
+*  ├─ hdfs dfs -chown <owner> <path>           * hadoop 更改路径的所有者
+*  └─ hdfs dfs -chmod <mode> <path>            * hadoop 更改路径的权限
+** [hadoop|MapReduce]
+*  ├─ hadoop jar <jar-file> <main*class>       * hadoop 运行MapReduce作业
+*  ├─ hadoop job -list                         * hadoop 列出运行中的MapReduce作业
+*  └─ hadoop job -kill <job-id>                * hadoop 终止运行中的MapReduce作业
+** [hadoop|集群]
+*  ├─ start-dfs.sh                             * hadoop 启动HDFS服务
+*  ├─ stop-dfs.sh                              * hadoop 停止HDFS服务
+*  ├─ start-yarn.sh                            * hadoop 启动YARN服务
+*  ├─ stop-yarn.sh                             * hadoop 停止YARN服务
+*  └─ yarn node -list                          * hadoop 列出YARN集群中的节点
+*
+** [yarn]  ******************************************************************************************
+*  ├─ yarn init                 * 初始化新项目，创建package.json文件
+*  ├─ yarn install              * 安装项目中定义的所有依赖包
+*  ├─ yarn add <package>        * 安装指定的包，并将其添加到package.json的dependencies中
+*  ├─ yarn remove <package>     * 卸载指定的包，并从package.json中删除
+*  ├─ yarn upgrade              * 更新项目中的所有依赖包到最新版本
+*  ├─ yarn upgrade <package>    * 更新指定的包到最新版本
+*  ├─ yarn run <script>         * 运行package.json文件中定义的脚本
+*  ├─ yarn list                 * 列出当前项目中已安装的包
+*  ├─ yarn cache clean          * 清除Yarn的缓存
+*  └─ yarn version              * yarn版本
+*
+** [docker]  ****************************************************************************************
+*  ├─ docker search <image_name>                                * 搜索镜像。
+*  ├─ docker pull <image_name>:<tag>                            * 拉取镜像。
+*  ├─ docker images                                             * 列出本地已下载的镜像。
+*  ├─ docker rmi <image_id>                                     * 删除本地镜像。
+*  ├─ docker run <image_name>:<tag>                             * 运行容器。
+*  ├─ docker ps                                                 * 列出运行中的容器。
+*  ├─ docker ps -a                                              * 列出所有容器（包括停止的）。
+*  ├─ docker start <container_id>                               * 启动容器。
+*  ├─ docker stop <container_id>                                * 停止容器。
+*  ├─ docker exec -it <container_id> /bin/bash                  * 进入容器的交互式终端。
+*  ├─ docker rm <container_id>                                  * 删除容器。
+*  ├─ docker logs <container_id>                                * 查看容器日志。
+*  ├─ docker logs -f <container_id>                             * 实时查看容器日志。
+*  ├─ docker network create <network_name>                      * 创建自定义网络。
+*  ├─ docker network ls                                         * 列出网络。
+*  ├─ docker network connect <network_name> <container_id>      * 连接容器到网络。
+*  ├─ docker network disconnect <network_name> <container_id>   * 断开容器从网络。
+*  ├─ docker-compose up                                         * 使用Docker Compose启动服务。
+*  ├─ docker-compose down                                       * 使用Docker Compose停止服务。
+*  └─ docker-compose build                                      * 构建带有Docker Compose的服务。
+*
+** [nohup]  *****************************************************************************************
+*  ├─ nohup <任意命令> &                        * 将命令输出重定向到nohup.out文件
+*  ├─ nohup <任意命令> > <文件名> &             * 将命令重定向到固定文件
+*  └─ nohup <任意命令> > /dev/null 2>&1 &       * 将命令输出忽略
+*
+** [whistle]  *****************************************************************************************
+*  ├─ w2 start     * 启动whistle代理
+*  └─ w2 stop      * 停止whistle代理
+*
