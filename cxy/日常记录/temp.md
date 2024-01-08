@@ -1,468 +1,265 @@
-> 大数据组个人周报（2023-02-13~2023-02-17）
-
-**【本周主要工作内容】**
-
-1. 多品类看板迭代-数据回导和口径排查  – 99%
-   - 维度组合统计方式增加  — 100%
-   - 刷数到2022-01-01  — 100%
-   - 异常排查  — 5%
-2. B2C自助分析性能优化 — 100%
-   - B2C自助分析性能优化–mysql维表数据binlog接入ck
-   - quick-bi维值加速配置
-   - 数据集配置更新维护
-3. 乾派新系统mysql表接入hive
-   - 37张业务线表接入hive — 100%
-4. 异动归因分析
-   - 脚本开发 — 100%
-   - 刷数 — 50%
-
-**【思考与总结】**
-
-**【下周工作内容】**
-
-- AB三期–- 实验/策略授权功能
-- AB三期–- 策略实验操作记录功能
-- AB三期–- 字段长度调整
-
-> 大数据组个人周报（2023-02-20~2023-02-24）
-
-**【本周主要工作内容】**
-
-1. AB平台
-   - AB三期–- 实验/策略授权功能后端开发 –100
-   - AB三期–- 策略实验操作记录功能后端开发 –100
-2. 多品类看板 – 异常排查和修复
-   - 数据发散问题解决 – 100%
-   - 刷数到22年1月 – 100%
-3. 其他
-   - 异动归因分析脚本调整+刷数 — 100%
-   - 新媒体信息流用户转化明细表+新媒体信息流每日利润统计结果表脚本开发— 100%
-   - 集团实时播报迭代–C2B整体数据播报 – 90%
-   - 企业微信员工上岗数据对接-转转精神 – 10%
-
-**【思考与总结】**
-
-**【下周工作内容】**
-
-- 集团实时播报迭代–C2B整体数据播报
-- 企业微信员工上岗数据对接-转转精神
-
-> 大数据组个人周报（2023-02-27~2023-03-03）
-
-**【本周主要工作内容】**
-
-1. 企业微信员工上岗数据对接-转转精神
-   - 接口数据接入hive表并清洗数据 -100%
-   - 调度脚本开发，批量重跑脚本开发等 -100%
-2. C2B整体数据播报
-   - C2B实时宽表任务修改，实际价格调整为C1到手价 -100%
-   - 播报测试+数据验证 - 10%
-3. AB平台
-   - 策略实验操作记录调整 –90%
-
-**【思考与总结】**
-
-**【下周工作内容】**
-
-- C2B整体数据播报验收
-- AB策略修改日志调整
-
-> 大数据组个人周报（2023-03-06~2023-03-10）
-
-**【本周主要工作内容】**
-
-1. AB平台
-
-   - 策略修改编辑日志格式调整 – 100
-   - 联调测试与bug修改 – 100
-2. C2B整体数据播报
-
-   - 播报成交价格调整为C1到手价 – 100
-   - 数据验证和上线 – 100
-3. 质检人效数据建设
-
-   - 转转精神部门数据对接落表–接口数据拉取shell脚本任务开发 –100
-   - 清洗json并解析落部门表 – 100
-
-**【思考与总结】**
-
-**【下周工作内容】**
-
-- C2B播报迭代Order_source=66的业务线剔除寄卖的订单
-
-> 大数据组个人周报（2023-03-13~2023-03-17）
-
-**【本周主要工作内容】**
-
-1. 实时播报迭代C2B播报Order_source=66的业务线剔除寄卖的订单
-   - 66下剔除寄卖用户名单
-   - 错误的监控项口径调整，邮寄回收去掉49
-2. 其他
-   - 转转精神部门数据接口更新，请求最新接口，重刷、清洗数据
-   - 监控脚本开发-转转精神部门表
-   - 企业微信接口白名单问题http代理工具开发
-
-**【下周工作内容】**
-
-> 大数据组个人周报（2023-03-20~2023-03-24）
-
-**【本周主要工作内容】**
-
-1. 上门回收城市实时播报
-   - 实时播报脚本开发 – 100
-   - 实时播报数据验证–上线 – 100
-2. 其他
-   - 拉取企微数据接口数据不全–时区参数调整
-
-**【下周工作内容】**
-
-> 大数据组个人周报（2023-03-27~2023-03-31）
-
-**【本周主要工作内容】**
-
-1. B2C搭售产生订单小时播报
-   - 数据开发汇总到mysql - 100%
-   - 播报脚本开发 - 100%
-   - 验数与上线 - 100%
-2. 原多品类pop充配订单小时播报
-   - 播报脚本开发- 100%
-   - 验数与上线 - 80%（业务侧口径不准确，调整后同环比数据重新累计）
-3. 搭售近一月手机到配件漏斗数据定时邮件
-   - 第三方服务(3922)数据源接入云窗 –100%
-   - 定时邮件脚本开发 – 100%
-   - 验数 + 上线 – 70%
-   - 脚本优化：写死口径–>服务表获取口径 – 10%
-
-**【下周工作内容】**
-
-- 搭售近一月手机到配件漏斗数据定时邮件
-- 原多品类pop充配订单小时播报（验数）
-- OCD–触达通道管理，增加“全通道触达”选项
-
-> 大数据组个人周报（2023-04-03~2023-04-07）
-
-**【本周主要工作内容】**
-
-1. OCD–触达通道管理，增加“全通道触达”选项
-   - 后端接口修改 + 联调测试
-2. 搭售播报+定时脚本
-   - 搭售近一月手机到配件漏斗数据定时邮件 –100%
-   - 原多品类pop充配订单小时播报 –100%
-3. Tidb数据表接入
-   - 脚本开发+验数 – 100%
-
-**【下周工作内容】**
-
-- 权限系统数据对接
-- AB_指标管理增加收藏功能
-- AB_用户实验数据监控
-- AB_命名空间、策略分层、默认策略配置权限接口开发
-
-> 大数据组个人周报（2023-04-10~2023-04-14）
-
-**【本周主要工作内容】**
-
-1. AB实验
-   - 指标管理增加收藏功能接口开发 –100
-   - 命名空间、策略分层、默认策略配置支持权限配置接口开发 –100
-   - 用户实验数据监控小时监控脚本开发 –100
-   - 前段端联调测试 – 90
-2. 权限系统数据对接
-   - 权限系统数据接口http接入hive脚本开发+监控脚本开发 – 100
-   - 权限系统数据清洗落表脚本开发+验数 – 100
-3. 其他
-   - Tidb数据表接入数据缺失问题修复
-   - 搭售pop播报问题排查修改
-   - 触达通道管理，增加“全通道触达”选项，配置平台上线
-
-**【下周工作内容】**
-
-- AB测试功能测试+联调
-
-> 大数据组个人周报（2023-04-17~2023-04-21）
-
-**【本周主要工作内容】**
-
-1. 权限系统数据补充+修复
-
-   背景：之前的http接口使用jq在linux上进行json解析，jq1.6版本对于长度过长的数字解析会出现丢失位数的现象，导致数据乱了。并且补充发条爱客和外部人员的权限系统数据
-
-   - 发条爱客+外部人员数据接入–100
-   - json解析工具换成python解析 –100
-   - 排查之前的脚本数据
-2. 其他
-
-   - B2C数据实时播报多品类口径调整-去除直播+电动汽车+非多品类商户+C1寄卖+搭售 –90
-   - AB需求上线
-   - AB实验流量小时监控上线并验证
-
-**【下周工作内容】**
-
-- IDB接入CDC工单自动化提供接口
-
-> 大数据组个人周报（2023-04-24~2023-04-28）
-
-**【本周主要工作内容】**
-
-1. OCD
-
-   - 运营计划优先级优化+存量计划维护
-   - 运营计划删除后端开发功能
-   - 新增计划用途字段+存量计划维护
-2. IDB接入CDC工单自动化提供接口
-
-   - 项目搭建+接口开发
-   - 部署，输出接口文档
-   - 域名申请+解析
-3. 其他
-
-   - B2C数据播报，剔除c1寄卖
-
-**【下周工作内容】**
-
-- IDB接入CDC工单自动化提供接口联调
-
-> 大数据组个人周报（2023-05-08~2023-05-12）
-
-**【本周主要工作内容】**
-
-1. OCD-push通道接入
-
-   - 配置后台接口修改
-2. IDB接入CDC工单自动化提供接口
-   - 提供批量插入接口
-   - 接口联调修改、测试
-3. 其他
-
-   - db58_zzlogistics库cdc同步任务7张表问题排查与重新初始化
-   - 搭售播报逻辑修改调整
-
-**【下周工作内容】**
-
-- 质检人效：新转转主体数据接入
-
-> 大数据组个人周报（2023-05-15~2023-05-19）
-
-**【本周主要工作内容】**
-
-1. OCD-push通道接入
-
-   - 配置平台后端联调+上线
-2. 质检人效
-   - 新转转主体5张表数据接入
-   - 5张表清洗结构化数据
-   - 历史任务脚本和jar包修改优化
-   - 脚本任务监控脚本开发
-
-**【下周工作内容】**
-
-- AB平台新一期需求后端开发
-- OCD配置平台需求后端开发
-
-> 大数据组个人周报（2023-05-22~2023-05-26）
-
-**【本周主要工作内容】**
-
-1. OCD配置平台
-
-   - 红包元类型限制–后端接口修改 – 100%
-   - 接口测试、前后端联调 – 100%
-   - 配置平台后端上线 – 100%
-2. AB平台
-   - 策略实验指标管理接口开发 – 90%
-   - 策略实验是否开启实验报告接口开发 – 90%
-   - 接口测试、前后端联调 – 10%
-3. 其他
-   - B2C实时货源播报口径修改 – 90% 下周四可上线
-
-**【下周工作内容】**
-
-- AB平台策略实验指标管理
-- AB平台策略实验是否开启实验报告
-
-> 大数据组个人周报（2023-05-29~2023-06-02）
-
-**【本周主要工作内容】**
-
-1. AB平台
-   - 策略实验指标管理接口开发 – 100%
-   - 策略实验是否开启实验报告接口开发 – 100%
-   - 接口测试、前后端联调 – 100%
-2. 上门回收全国&大区核心数据实时播报迭代 – 100%
-3. C2B邮寄业务 - 实时播报开发
-   - 脚本开发 – 100%
-   - 脚本验证 – 100%
-4. 其他
-   - B2C实时货源播报口径修改 – 100%
-
-**【下周工作内容】**
-
-- AB需求迭代
-
-> 大数据组个人周报（2023-06-05~2023-06-09）
-
-**【本周主要工作内容】**
-
-1. ocd
-   - push类运营计划支持延迟触发-配置平台接口开发–100%
-   - 策略+联调 –100%
-2. 其他
-   - B2C搭售表增加碎屏保数据 – 100%
-   - 搭售播报脚本修改，定时邮件脚本修改 –100%
-
-**【下周工作内容】**
-
-- 售后机器人超时环节播报
-- ocd需求
-
-> 大数据组个人周报（2023-06-12~2023-06-16）
-
-**【本周主要工作内容】**
-
-1. ocd智能运营平台
-   - 运营计划操作日志–接口开发 –100%
-   - 运营计划触达进度漏洞默认展示日期–后端接口修改 –100%
-   - 接口自测+联调 –50%
-2. 金融借钱播报
-   - 借钱订单量播报开发–100%
-   - 借钱放款金额播报开发 –100%
-3. 智齿机器人数据接入
-   - Java脚本开发 –100%
-   - 脚本部署数据落表 –50%
-
-**【下周工作内容】**
-
-- 售后机器人超时环节播报
-- 智齿机器人数据接入
-
-> 大数据组个人周报（2023-07-03~2023-07-07）
-
-**【本周主要工作内容】**
-
-1. 价格中台
-   - 后端项目搭建初始化 – 100%
-   - 数据库表设计 – 100%
-   - 对接爬虫
-     - 模板预处理接口开发 – 100%
-     - 任务完成通知接口开发 – 100%
-   - 字典项管理接口开发 – 100%
-   - 属性模板管理接口开发 – 100%
-2. 其他
-   - 售后机器人超时环节播报 – 100%
-   - 售后机器人超时文件明细播报 – 100%
-
-**【下周工作内容】**
-
-- 价格中台 – 排期开发
-
-> 大数据组个人周报（2023-07-10~2023-07-14）
-
-**【本周主要工作内容】**
-
-1. 价格中台
-   - 质检模板框架相关接口开发
-   - 质检模板相关接口开发
-   - 调度任务配置相关接口开发
-   - 任务自动调度相关脚本开发
-   - 自动下线相关脚本开发
-   - 爬虫联调：对接爬虫爬取脚本接口
-
-**【下周工作内容】**
-
-- 价格中台
-  - 后端冒烟测试
-  - 前后端联调
-
-- 售后效率-机器人播报迭代 
-
-> 大数据组个人周报（2023-07-17~2023-07-21）
-
-**【本周主要工作内容】**
-
-1. 价格洞察者平台
-   1. 前后端联调 – 100%
-   2. 后端接口自测 – 100%
-   3. 后端冒烟测试 – 100%
-   4. 整体流程测试及问题排查与修改
-
-2. 其他
-   1. CdcMapper服务自动重启脚本优化
-
-
-**【下周工作内容】**
-
-- 价格洞察者平台
-
-- 售后效率-机器人播报迭代 
-
-> 大数据组个人周报（2023-07-24~2023-07-28）
-
-**【本周主要工作内容】**
-
-1. 价格洞察平台
-   1. 一期相关后端逻辑优化 – 100%
-   2. 模板、任务相关增加对应监控 – 100%
-   3. 一期上线 – 100%
-   4. 二期数据字典功能表设计 – 50%
-
-2. 售后效率-机器人播报迭代 
-   1. 收货后20h未判责播报逻辑迭代 – 100%
-
-
-**【下周工作内容】**
-
-- 价格洞察平台-数据字典功能
-
-> 大数据组个人周报（2023-07-31~2023-08-04）
-
-**【本周主要工作内容】**
-
-1. 价格洞察平台
-   1. 数据字典管理接口开发 – 100%
-   2. 字典项管理开发 – 100%
-   3. 文件上传 – 100%
-   4. 上线 – 100%
-   5. 权限系统接入 – 20%
-2. 其他
-   1.  碎屏保搭售数据播报迭代 – 100%
-
-
-
-**【下周工作内容】**
-
-- 价格洞察平台
-  - 权限系统接入
-  - 告警通知功能开发
-  - 功能优化
-  - 多品类兼容测试
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+[toc]
+
+## **云窗-httpServer播报开发文档**
+
+> **功能**：将云窗sql执行结果输出到企业微信群机器人播报，可自行定时播送，有sql，就有播报。
+>
+> 当前webhook地址：http://10.40.16.29:9862/yc/bot/sendToGroup/indexTemplate –POST
+
+#### 关键字
+
+> 定义：维度、类目、指标值、阈值、接警人、数据时间
+>
+> 作用：帮助切割组装播报模板信息，如果没有关键字，播报也可正常使用，结果为数据行的拼接发送，可自行demo测试。
+
+| **关键字** | **类型** | **是否必须** | **作用**                                                  | **备注** |
+| ---------- | -------- | ------------ | --------------------------------------------------------- | -------- |
+| 维度       | 字符     | 否           | 播报的聚合维度（如：站点名称）                            |          |
+| 类目       | 字符     | 否           | 播报的指标类目（如：手机）                                |          |
+| 指标值     | 浮点     | 否           | 指标内容（如：订单量）                                    |          |
+| 阈值       | 浮点     | 否           | 订单量的阈值设置，小于此值会加重颜色，如有接警人会@接警人 |          |
+| 接警人     | 字符     | 否           | 当前行指标需要@的负责人，如未设置阈值，则默认@接警人      |          |
+| 数据时间   | 字符     | 否           | 播报的数据时间（如：云窗变量${outFileSuffix}）            |          |
+
+#### 机器人配置
+
+> 作用：企微的告警机器人的配置信息等。
+
+| **配置名**   | **类型** | **是否必须** | **作用**                                               | **备注** |
+| ------------ | -------- | ------------ | ------------------------------------------------------ | -------- |
+| `@botKey`    | 字符     | 是           | 播报的机器人秘钥：参考企微机器人key获取方式            |          |
+| `@botTitle`  | 字符     | 是           | 播报的标题（如：B2C订单量播报）                        |          |
+| @otherSuffix | 字符     | 否           | 额外信息（如：指标口径文档等需要追加在播报尾部的文案） |          |
+| `@botSuffix` | 字符     | 是           | 播报结尾（如：PM负责人：xxx  数据负责人：xxx）         |          |
+
+## 配置过程
+
+- 编写Sql
+
+- 云窗配置-`将结果输出到-Http Server`
+- url配置为：http://10.40.16.29:9862/yc/bot/sendToGroup/indexTemplate 
+- 可以利用云窗进行：定时/依赖配置
+
+### 样例1、标准指标类型分维度播报
+
+基本内容为：`维度` + `类目` + `指标值` + 其他内容
+
+#### 云窗配置：
+
+![image-20231128172836325](temp.assets/image-20231128172836325.png)
+
+```sql
+-- @botKey:e4cd6c7f-1479-422c-bf59-37e52e09289d
+-- @botTitle:B2C搭售订单量小时播报
+-- @otherSuffix:[指标口径文档](https://www.baidu.com)
+-- @botSuffix:PM负责人：陈新予 播报负责人：陈新予
+select concat(t1.platform, '（订单数）') as '维度'
+	, t1.order_type as '类目'
+	, t1.order_num as '指标值'
+	, if(t2.order_num is null,0,t2.order_num) as '昨日值'
+	, if(t2.order_num=0 or t2.order_num is null,'∞',round((t1.order_num - t2.order_num) / t2.order_num * 100,2)) as '日环比'
+	, if(t3.order_num=0 or t3.order_num is null,'∞',round((t1.order_num - t3.order_num) / t3.order_num * 100,2)) as '周同比'
+	, round(t1.order_profit,2) as '利润'
+	, if(order_profit_all=0,'∞',round(t1.order_profit / order_profit_all * 100,2)) as '利润占比'
+from (
+	(select '双卖场' as platform  
+		, '搭售汇总' as order_type
+		, count(DISTINCT order_server_id) as order_num
+		, sum(total_amt) as order_profit
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-27 16' and data_flag = 1)
+	union all
+	(select '双卖场' as platform  
+		, order_type
+		, count(DISTINCT order_server_id) as order_num
+		, sum(total_amt) as order_profit
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-27 16' and data_flag = 1
+	group by order_type
+	order by FIELD(order_type, '苹果快充', '安卓快充', '普充', '充电宝', '碎屏保(1年期)', '碎屏保(3月期)', '碎屏保(6月期)', '一年延保', '半年延保', '其他配件') limit 999999)
+	union all 
+	(select platform,order_type,order_num,order_profit
+	from (select platform
+			, '搭售汇总' order_type
+			, count(DISTINCT order_server_id) as order_num
+			, sum(total_amt) as order_profit
+		from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+		where Left(stat_date,13) = '2023-11-27 16' and data_flag = 1
+		group by platform
+		union all
+		select platform
+			, order_type
+			, count(DISTINCT order_server_id) as order_num
+			, sum(total_amt) as order_profit
+		from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+		where Left(stat_date,13) = '2023-11-27 16' and data_flag = 1
+		group by order_type,platform) ttt
+	order by FIELD(platform, '转转', '找靓机')
+		, FIELD(order_type, '苹果快充', '安卓快充', '普充', '充电宝', '碎屏保(1年期)', '碎屏保(3月期)', '碎屏保(6月期)', '一年延保', '半年延保', '其他配件')
+	limit 999999)
+) t1 left join (
+	(select '双卖场' as platform  
+		, sum(total_amt) as order_profit_all
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-27 16' and data_flag = 1)
+	union all 
+	(select platform
+		, sum(total_amt) as order_profit_all
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-27 16' and data_flag = 1
+	group by platform)
+) t1_all on t1.platform = t1_all.platform LEFT join (
+	select '双卖场' as platform  
+		, '搭售汇总' as order_type
+		, count(DISTINCT order_server_id) as order_num
+		, sum(total_amt) as order_profit
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-26 16' and data_flag = 1
+	union all
+	select '双卖场' as platform  
+		, order_type
+		, count(DISTINCT order_server_id) as order_num
+		, sum(total_amt) as order_profit
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-26 16' and data_flag = 1
+	group by order_type
+	union all 
+	select platform,order_type,order_num,order_profit
+	from (select platform
+			, '搭售汇总' order_type
+			, count(DISTINCT order_server_id) as order_num
+			, sum(total_amt) as order_profit
+		from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+		where Left(stat_date,13) = '2023-11-26 16' and data_flag = 1
+		group by platform
+		union all
+		select platform
+			, order_type
+			, count(DISTINCT order_server_id) as order_num
+			, sum(total_amt) as order_profit
+		from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+		where Left(stat_date,13) = '2023-11-26 16' and data_flag = 1
+		group by order_type,platform
+	 ) ttt
+) t2 on t1.platform = t2.platform and t1.order_type = t2.order_type LEFT join (
+	select '双卖场' as platform  
+		, '搭售汇总' as order_type
+		, count(DISTINCT order_server_id) as order_num
+		, sum(total_amt) as order_profit
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-20 16' and data_flag = 1
+	union all
+	select '双卖场' as platform  
+		, order_type
+		, count(DISTINCT order_server_id) as order_num
+		, sum(total_amt) as order_profit
+	from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+	where Left(stat_date,13) = '2023-11-20 16' and data_flag = 1
+	group by order_type
+	union all 
+	select platform,order_type,order_num,order_profit
+	from (select platform
+			, '搭售汇总' order_type
+			, count(DISTINCT order_server_id) as order_num
+			, sum(total_amt) as order_profit
+		from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+		where Left(stat_date,13) = '2023-11-20 16' and data_flag = 1
+		group by platform
+		union all
+		select platform
+			, order_type
+			, count(DISTINCT order_server_id) as order_num
+			, sum(total_amt) as order_profit
+		from dbzz_zeye_offline_b2c.t_bb_b2c_bundling_data_full_1h 
+		where Left(stat_date,13) = '2023-11-20 16' and data_flag = 1
+		group by order_type,platform
+	 ) ttt
+) t3 on t1.platform = t3.platform and t1.order_type = t3.order_type and  t3.platform = t2.platform and t3.order_type = t2.order_type
+```
+
+#### 播报效果：
+
+> 当多个维度的组合内容超过企微限制大小时，会自动切分进行播报。只需关注sql即可
+
+![image-20231128172946746](temp.assets/image-20231128172946746.png)
+
+### 样例2、指标告警分维度播报
+
+基本内容为：`维度` +` 类目` + `指标值` + `阈值` + 接警人 + 其他内容
+
+#### 云窗配置：
+
+![image-20231128192418915](temp.assets/image-20231128192418915.png)
+
+```sql
+-- @botKey:e4cd6c7f-1479-422c-bf59-37e52e09289d
+-- @botTitle:B2C搭售订单量小时播报
+-- @otherSuffix:[指标口径文档](https://www.baidu.com)
+-- @botSuffix:PM负责人：陈新予 播报负责人：陈新予
+-- webhook:http://10.40.16.29:9862/yc/bot/sendToGroup/indexTemplate
+-- 获取用户表的userid:select userid,realname from hdp_zhuanzhuan_rawdb_global.raw_auth_bs_user_auth_info_full_1d where dt = '${outFileSuffix}' and realname in ('陈新予')
+select wd as '维度'
+	, swd as '类目'
+	, num as '指标值'
+	, 90 as '阈值'
+	, '<@603608627>' as '接警人'
+	, '${outFileSuffix}' as '数据时间'
+from (
+	select '站点1' as wd, '覆盖率' as swd , 95 as num
+	union all
+	select '站点1' as wd, '达成率' as swd , 80 as num
+	union all
+	select '站点2' as wd, '覆盖率' as swd , 95 as num
+	union all 
+	select '站点2' as wd, '达成率' as swd , 99 as num
+	union all 
+	select '站点3' as wd, '当日达' as swd , 100 as num
+	union all 
+	select '站点3' as wd, '次日达' as swd , 90 as num
+) t 
+```
+
+#### 播报效果：
+
+<img src="temp.assets/image-20231128173646405.png" alt="image-20231128173646405" style="zoom:50%;" />
+
+#### 接警人：
+
+`markdown`格式的播报需要获取到负责用户的`企业微信ID`, 企微ID的获取使用中台权限系统的用户信息表获取：
+
+```sql
+select userid,realname 
+from hdp_zhuanzhuan_rawdb_global.raw_auth_bs_user_auth_info_full_1d 
+where dt = '${outFileSuffix}' and realname in ('陈新予')
+```
+
+### 样例3、普通拼接播报
+
+#### 云窗配置：
+
+![image-20231128192344434](temp.assets/image-20231128192344434.png)
+
+```sql
+-- @botKey:e4cd6c7f-1479-422c-bf59-37e52e09289d
+-- @botTitle:任意类型拼接播报
+-- @otherSuffix:[指标口径文档](https://www.baidu.com)
+-- @botSuffix:PM负责人：陈新予 播报负责人：陈新予
+select site_name as '收货站点'
+    ,model_name as '型号'
+from dbzz_realtime.t_dm_afs_info_detail_rs 
+where ass_type_name = '维修'
+and claim_time is null
+and TIMESTAMPDIFF(DAY,recycle_update_time,'2023-11-28 16:30:00') <= 15
+and TIMESTAMPDIFF(HOUR,recycle_update_time,'2023-11-28 16:30:00') > 19
+and ass_site_id = 1
+and recycle_status = '已收货' 
+and (claim_person_id is null or claim_person_id = 0)
+and business_line_id not like '904%'
+and ass_order_state_name <> '完结'
+limit 10
+```
+
+#### 播报效果：
+
+<img src="temp.assets/image-20231128192124717.png" alt="image-20231128192124717" style="zoom:50%;" />
 
