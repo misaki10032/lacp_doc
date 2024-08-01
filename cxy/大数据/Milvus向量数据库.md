@@ -56,7 +56,7 @@ Milvus 作为云原生矢量数据库，在设计上将存储与计算分离，�
 - 存储：存储是系统的骨架，负责数据的持久化，包括元存储、日志代理、对象存储。
 
 [架构概述](https://milvus.io/docs/architecture_overview.md)
-![[../后端/云原生/Pasted image 20240709104044.png]]
+![image-2020240709104044](../后端/云原生/Pasted%20image%2020240709104044.png)
 ## 安装Milvus
 相关参考
 Milvus1.0 安装方式可参考以下文档：
@@ -78,7 +78,7 @@ docker compose up -d
 # Creating milvus-standalone ... done
 ```
 - 在docker desktop中查看containers
-![[../后端/云原生/Pasted image 20240709104447.png]]
+- ![image-20240709104447](../后端/云原生/Pasted%20image%2020240709104447.png)
 - 在终端检查
 ```shell
 ❯ docker ps
@@ -280,9 +280,9 @@ client.drop_collection(collection_name="demo_test")
 >https://github.com/zilliztech/attu/releases
 >选择自己需要的相关版本下载
 
-![[../后端/云原生/Pasted image 20240709112926.png]]
+- ![image-20240709112926](../后端/云原生/Pasted%20image%2020240709112926.png)
 输入docker地址进入
-![[../后端/云原生/Pasted image 20240709112948.png]]
+- ![image-20240709112948](../后端/云原生/Pasted%20image%2020240709112948.png)
 
 怎么用就不记录了，详细参考github[https://github.com/zilliztech/attu/blob/main/doc/zh-cn.md]
 
