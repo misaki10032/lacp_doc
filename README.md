@@ -2,7 +2,7 @@
 
 **【更新记录】**
 
-【2024-08-01】[Spring-redis使用lettuce客户端爆炸半径问题](cxy/日常记录/杂谈.md?id=Hive)
+【2024-08-01】[Spring-redis使用lettuce客户端爆炸半径问题](cxy/日常记录/杂谈.md?id=java使用Lettuce链接redis客户端爆炸半径问题)
 
 【2024-07-05】[云原生框架Quarkus学习](./cxy/后端/云原生/Quarkus.md)
 
