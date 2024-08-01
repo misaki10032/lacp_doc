@@ -7,6 +7,7 @@
     - [学习交流平台](学习交流平台/学习交流平台.md)
     - [NoneBot配合go-cqhttp搭建QQ机器人](学习记录/NoneBot的搭建与使用.md)
   * 大数据
+    - [向量数据库学习笔记](./cxy/大数据/Milvus向量数据库.md)
     - [clickhouse学习笔记](cxy/大数据/clickhouse.md)
     - [flink学习笔记](cxy/大数据/flink.md)
     - [Hadoop学习笔记](cxy/大数据/Hadoop学习.md)
@@ -18,6 +19,7 @@
     - [Apache doris](cxy/大数据/doris.md)
     - [数仓理论学习](cxy/大数据/数仓学习.md)
   * 后端
+    - [Quarkus框架学习](./cxy/后端/云原生/Quarkus.md)
     - [Elastic学习笔记](cxy/后端/ES学习.md)
     - [工具类](cxy/后端/工具方法.md)
     - [Kafka学习笔记](cxy/后端/MQ-Kafka.md)
