@@ -15,4 +15,6 @@
   * [NoneBot配合go-cqhttp搭建QQ机器人](学习记录/NoneBot的搭建与使用.md)
   * [日常学习记录](cxy/日常记录/杂谈.md)
   * [问题与Bug记录](学习记录/问题记录.md)
+* 刷题
+  * [LeetCode Top 100](学习记录/hot100.md)
   * [向量数据库学习](./cxy/大数据/Milvus向量数据库.md)

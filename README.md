@@ -2,6 +2,8 @@
 
 **【更新记录】**
 
+【2025-04-15】[LeetCode Top 100](学习记录/hot100.md)
+
 【2024-08-01】[Spring-redis使用lettuce客户端爆炸半径问题](cxy/日常记录/杂谈.md?id=java使用Lettuce链接redis客户端爆炸半径问题)
 
 【2024-07-05】[云原生框架Quarkus学习](./cxy/后端/云原生/Quarkus.md)
